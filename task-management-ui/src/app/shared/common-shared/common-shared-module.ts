@@ -48,6 +48,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
+import { TagModule } from 'primeng/tag';
 
 import { MessageService } from 'primeng/api';
 import { ValidationMessage } from './validation-message/validation-message';
@@ -113,7 +114,8 @@ import { CompWrap } from './comp-wrap/comp-wrap';
     ToggleSwitch,
     IconFieldModule,
     InputIconModule,
-    OverlayBadgeModule
+    OverlayBadgeModule,
+    TagModule
   ],
   exports: [
     FormsModule,
@@ -168,6 +170,7 @@ import { CompWrap } from './comp-wrap/comp-wrap';
     IconFieldModule,
     InputIconModule,
     OverlayBadgeModule,
+    TagModule,
 
     // Component 
     ValidationMessage,

@@ -1,1 +1,246 @@
-<p>tasks works!</p>
+<div class="tasks-container container-fluid py-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div>
+        <h4 class="mb-0 fw-bold text-dark">Task Management</h4>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <p-button
+        label="New Task"
+        icon="pi pi-plus"
+        severity="primary"
+        (click)="openNewTask()"
+      ></p-button>
+      <div class="d-flex align-items-center">
+        <p-tieredmenu #menu [model]="menuItems()" [popup]="true" [appendTo]="'body'" />
+        <p-button
+          (click)="menu.toggle($event)"
+          icon="pi pi-ellipsis-v"
+          [rounded]="true"
+          severity="secondary"
+          [text]="true"
+        >
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-3 filter-card">
+    <div class="p-3">
+      <div class="row g-3 align-items-end">
+        <!-- Search -->
+        <div class="col-12 col-md-6">
+          <label class="d-block small text-muted mb-1">Search</label>
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <i class="pi pi-search"></i>
+            </p-inputgroup-addon>
+            <input
+              pInputText
+              placeholder="Search by title"
+              [(ngModel)]="searchText"
+              (input)="onSearch()"
+              class="w-100"
+            />
+          </p-inputgroup>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="col-12 col-md-2">
+          <label class="d-block small text-muted mb-1">Status</label>
+          <p-select
+            [options]="statusOptions"
+            [(ngModel)]="selectedStatus"
+            placeholder="All Statuses"
+            [showClear]="true"
+            (onChange)="applyFilters()"
+            styleClass="w-100"
+          >
+          </p-select>
+        </div>
+
+        <!-- Priority Filter -->
+        <div class="col-12 col-md-2">
+          <label class="d-block small text-muted mb-1">Priority</label>
+          <p-select
+            [options]="priorityOptions"
+            [(ngModel)]="selectedPriority"
+            placeholder="All Priorities"
+            [showClear]="true"
+            (onChange)="applyFilters()"
+            styleClass="w-100"
+          >
+          </p-select>
+        </div>
+
+        <!-- Clear -->
+        <div class="col-12 col-md-2">
+          <p-button
+            label="Clear Filters"
+            [text]="true"
+            severity="secondary"
+            (click)="clearFilters()"
+            styleClass="w-100"
+          >
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card table-card">
+    <p-table
+      [value]="filteredTasks"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="rows"
+      [(first)]="first"
+      [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      selectionMode="multiple"
+      [(selection)]="selectedTasks"
+      [globalFilterFields]="['title', 'description', 'assignee', 'id']"
+      class="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '55rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <!-- <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th> -->
+          <th style="min-width: 12rem">ID</th>
+          <th style="min-width: 12rem">TASK</th>
+          <th style="min-width: 9rem">ASSIGNEE</th>
+          <th style="width: 9rem">PRIORITY</th>
+          <th style="width: 10rem">STATUS</th>
+          <th style="width: 9rem">DUE DATE</th>
+          <th style="width: 6rem">ACTIONS</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-task>
+        <tr>
+          <!-- <td>
+            <p-tableCheckbox [value]="task"></p-tableCheckbox>
+          </td> -->
+          <td>
+            <div class="text-dark">{{ task.id }}</div>
+          </td>
+          <td>
+            <div class="fw-bold text-dark">{{ task.title }}</div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small">{{ task.assignee }}</span>
+            </div>
+          </td>
+          <td>
+            <p-tag
+              size="small"
+              [value]="task.priority | titlecase"
+              [severity]="getPrioritySeverity(task.priority)"
+            >
+            </p-tag>
+          </td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(task.status)"
+              [severity]="getStatusSeverity(task.status)"
+            >
+            </p-tag>
+          </td>
+          <td>
+            <span class="small text-nowrap" [class.text-danger]="task.status === 'overdue'">
+              <i
+                class="pi pi-calendar me-1"
+                [class.text-danger]="task.status === 'overdue'"
+                [class.text-muted]="task.status !== 'overdue'"
+              ></i>
+              {{ task.dueDate }}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <p-button
+                icon="pi pi-eye"
+                [text]="true"
+                severity="primary"
+                size="small"
+                (click)="viewTask(task)"
+                pTooltip="VIEW"
+                tooltipPosition="top"
+              >
+              </p-button>
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="info"
+                size="small"
+                (click)="openEditTask(task)"
+                pTooltip="Edit"
+                tooltipPosition="top"
+              >
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (click)="deleteTask(task)"
+                pTooltip="Delete"
+                tooltipPosition="top"
+              >
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-5">
+            <div class="text-muted">
+              <i class="pi pi-inbox fs-1 d-block mb-2 text-muted"></i>
+              <p class="mb-0">No tasks found</p>
+              <small>Try adjusting your filters or create a new task</small>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <!-- Bulk Actions -->
+    <div class="p-3 border-top bulk-actions" *ngIf="selectedTasks.length > 0">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">
+          <i class="pi pi-check-square me-1"></i>
+          <strong>{{ selectedTasks.length }}</strong> task(s) selected
+        </span>
+        <div class="d-flex gap-2">
+          <p-button
+            label="Delete Selected"
+            icon="pi pi-trash"
+            severity="danger"
+            size="small"
+            (click)="deleteSelectedTasks()"
+          >
+          </p-button>
+          <p-button
+            label="Export"
+            icon="pi pi-download"
+            severity="secondary"
+            size="small"
+            (click)="exportTasks('csv')"
+          >
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>
