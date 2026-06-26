@@ -49,20 +49,20 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 
 import { MessageService } from 'primeng/api';
-
-
-
+import { ValidationMessage } from './validation-message/validation-message';
+import { CompWrap } from './comp-wrap/comp-wrap';
 
 @NgModule({
   declarations: [
-
+    ValidationMessage,
+    CompWrap
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
 
-    // PrimeNg 
+    // PrimeNg
     ButtonModule,
     InputTextModule,
     // DropdownModule,
@@ -112,7 +112,6 @@ import { MessageService } from 'primeng/api';
     ToggleSwitch,
     IconFieldModule,
     InputIconModule,
-
   ],
   exports: [
     FormsModule,
@@ -167,9 +166,12 @@ import { MessageService } from 'primeng/api';
     IconFieldModule,
     InputIconModule,
 
+    // Component 
+    ValidationMessage,
+    CompWrap
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 
-  providers: [MessageService]
+  providers: [MessageService],
 })
 export class CommonSharedModule { }
