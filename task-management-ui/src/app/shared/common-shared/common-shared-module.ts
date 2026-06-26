@@ -47,6 +47,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { OverlayBadgeModule } from 'primeng/overlaybadge';
 
 import { MessageService } from 'primeng/api';
 import { ValidationMessage } from './validation-message/validation-message';
@@ -112,6 +113,7 @@ import { CompWrap } from './comp-wrap/comp-wrap';
     ToggleSwitch,
     IconFieldModule,
     InputIconModule,
+    OverlayBadgeModule
   ],
   exports: [
     FormsModule,
@@ -165,6 +167,7 @@ import { CompWrap } from './comp-wrap/comp-wrap';
     ToggleSwitch,
     IconFieldModule,
     InputIconModule,
+    OverlayBadgeModule,
 
     // Component 
     ValidationMessage,

@@ -10,28 +10,21 @@ import MyPreset from './../assets/scss/mypreset';
 // ========================== PrimeNg Setup End ========================================
 
 @NgModule({
-  declarations: [
-    App
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule
-  ],
+  declarations: [App],
+  imports: [BrowserModule, AppRoutingModule],
   providers: [
     provideBrowserGlobalErrorListeners(),
     // ========================== PrimeNg Setup Start ========================================
-    providePrimeNG(
-      {
-        theme: {
-          preset: MyPreset, // Custom Theme 
-          options: {
-            darkModeSelector: 'none'
-          }
-        }
-      }
-    )
+    providePrimeNG({
+      theme: {
+        preset: MyPreset, // Custom Theme
+        options: {
+          darkModeSelector: 'none',
+        },
+      },
+    }),
     // ========================== PrimeNg Setup End ========================================
   ],
-  bootstrap: [App]
+  bootstrap: [App],
 })
 export class AppModule { }
