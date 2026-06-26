@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Injector, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
+import { AppComponentBase } from '../common-shared/app-component-base';
 
 @Component({
   selector: 'app-header-portal',
@@ -8,7 +9,7 @@ import { Menu } from 'primeng/menu';
   templateUrl: './header-portal.html',
   styleUrl: './header-portal.scss',
 })
-export class HeaderPortal implements OnInit {
+export class HeaderPortal extends AppComponentBase implements OnInit {
   @ViewChild('profileMenu') profileMenu!: Menu;
 
   userInfo = {
@@ -19,18 +20,27 @@ export class HeaderPortal implements OnInit {
 
   profileMenuItems: MenuItem[] = [];
 
+  constructor(private injector:Injector){
+    super(injector)
+
+  }
+
   ngOnInit(): void {
     this.profileMenuItems = [
       {
         label: 'Logout',
         icon: 'pi pi-sign-out',
         styleClass: 'logout-item',
-        command: () => {},
+        command: () => this.onLogout(),
       },
     ];
   }
 
   toggleProfileMenu(event: Event): void {
     this.profileMenu.toggle(event);
+  }
+  onLogout(){
+    this.routerNavigate('account/login')
+    
   }
 }
