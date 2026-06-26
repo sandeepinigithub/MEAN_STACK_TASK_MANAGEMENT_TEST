@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Injector, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AppComponentBase } from '../../shared/common-shared/app-component-base';
 
 @Component({
   selector: 'app-login',
@@ -7,12 +8,14 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login implements OnInit {
+export class Login extends AppComponentBase implements OnInit {
   loginForm!: FormGroup;
   showPassword = false;
-  isSubmitLoader = false;
+  // isSubmitLoader = false;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(injector: Injector, private fb: FormBuilder) {
+    super(injector)
+  }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -22,12 +25,13 @@ export class Login implements OnInit {
   }
 
   onSignin(): void {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
+    // if (this.loginForm.invalid) {
+    //   this.loginForm.markAllAsTouched();
+    //   return;
+    // }
     this.isSubmitLoader = true;
     // TODO: integrate auth service
-    setTimeout(() => (this.isSubmitLoader = false), 2000);
+    this.routerNavigate('portal')
+    
   }
 }
