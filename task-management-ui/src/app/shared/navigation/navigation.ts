@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { AppNavigationService } from './app-navigation-service';
+import { AppMenu } from './app-menu';
 
 @Component({
   selector: 'app-navigation',
@@ -6,10 +8,15 @@ import { Component } from '@angular/core';
   templateUrl: './navigation.html',
   styleUrl: './navigation.scss',
 })
-export class Navigation {
-  sidebarCloseFlag: boolean = false
-  menu: any = []
-  sidebarCloseEvent(event: any) {
+export class Navigation implements OnInit {
+  sidebarCloseFlag: boolean = false;
+  menu: AppMenu | null = null;
 
+  constructor(private appNavigationService: AppNavigationService) {}
+
+  ngOnInit(): void {
+    this.menu = this.appNavigationService.getMenu();
   }
+
+  sidebarCloseEvent(event: any) {}
 }
