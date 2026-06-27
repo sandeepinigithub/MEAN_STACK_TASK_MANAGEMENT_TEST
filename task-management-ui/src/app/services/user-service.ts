@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment.prod';
 export class UserService {
   private readonly base = `${environment.baseUrl}`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getUsers(params?: any) {
     return this.http.get(`${this.base}/api/users`, { params });
@@ -26,5 +26,8 @@ export class UserService {
 
   deleteUser(id: string) {
     return this.http.delete(`${this.base}/api/users/${id}`);
+  }
+  getUsersMasterList(params?: any) {
+    return this.http.get(`${this.base}/api/users/master-list`, { params });
   }
 }

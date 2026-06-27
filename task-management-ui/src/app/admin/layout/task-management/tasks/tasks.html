@@ -80,25 +80,18 @@
   <!-- Table -->
   <div class="card table-card">
     <p-table
-      [value]="filteredTasks"
-      [loading]="loading"
+      [value]="primengTableHelper.records"
+      [loading]="primengTableHelper.isLoading"
       [paginator]="true"
-      [rows]="rows"
+      [rows]="primengTableHelper.defaultRecordsCountPerPage"
       [(first)]="first"
-      [totalRecords]="totalRecords"
-      [rowsPerPageOptions]="[10, 25, 50]"
-      selectionMode="multiple"
-      [(selection)]="selectedTasks"
-      [globalFilterFields]="['title', 'description', 'assignee', 'id']"
+      [totalRecords]="primengTableHelper.totalRecordsCount"
+      [rowsPerPageOptions]="primengTableHelper.predefinedRecordsCountPerPage"
       class="p-datatable-sm"
       [tableStyle]="{ 'min-width': '55rem' }"
     >
       <ng-template pTemplate="header">
         <tr>
-          <!-- <th style="width: 3rem">
-            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-          </th> -->
-          <th style="min-width: 12rem">ID</th>
           <th style="min-width: 12rem">TASK</th>
           <th style="min-width: 9rem">ASSIGNEE</th>
           <th style="width: 10rem">STATUS</th>
@@ -109,69 +102,28 @@
 
       <ng-template pTemplate="body" let-task>
         <tr>
-          <!-- <td>
-            <p-tableCheckbox [value]="task"></p-tableCheckbox>
-          </td> -->
-          <td>
-            <div class="text-dark">{{ task.id }}</div>
-          </td>
           <td>
             <div class="fw-bold text-dark">{{ task.title }}</div>
           </td>
           <td>
-            <div class="d-flex align-items-center gap-2">
-              <span class="small">{{ task.assignee }}</span>
-            </div>
+            <span class="small">{{ task.assignedTo?.username ?? '—' }}</span>
           </td>
           <td>
-            <p-tag
-              [value]="getStatusLabel(task.status)"
-              [severity]="getStatusSeverity(task.status)"
-            >
-            </p-tag>
+            <p-tag [value]="getStatusLabel(task.status + '')" [severity]="getStatusSeverity(task.status + '')" />
           </td>
           <td>
-            <span class="small text-nowrap" [class.text-danger]="task.status === 'overdue'">
-              <i
-                class="pi pi-calendar me-1"
-                [class.text-danger]="task.status === 'overdue'"
-                [class.text-muted]="task.status !== 'overdue'"
-              ></i>
-              {{ task.dueDate }}
+            <span class="small text-muted text-nowrap">
+              {{ task.createdAt | date:'mediumDate' }}
             </span>
           </td>
           <td>
             <div class="d-flex gap-1">
-              <p-button
-                icon="pi pi-eye"
-                [text]="true"
-                severity="primary"
-                size="small"
-                (click)="viewTask(task)"
-                pTooltip="VIEW"
-                tooltipPosition="top"
-              >
-              </p-button>
-              <p-button
-                icon="pi pi-pencil"
-                [text]="true"
-                severity="info"
-                size="small"
-                (click)="openEditTask(task)"
-                pTooltip="Edit"
-                tooltipPosition="top"
-              >
-              </p-button>
-              <p-button
-                icon="pi pi-trash"
-                [text]="true"
-                severity="danger"
-                size="small"
-                (click)="deleteTask(task)"
-                pTooltip="Delete"
-                tooltipPosition="top"
-              >
-              </p-button>
+              <p-button icon="pi pi-eye" [text]="true" severity="primary" size="small"
+                (click)="viewTask(task)" pTooltip="View" tooltipPosition="top" />
+              <p-button icon="pi pi-pencil" [text]="true" severity="info" size="small"
+                (click)="openEditTask(task)" pTooltip="Edit" tooltipPosition="top" />
+              <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small"
+                (click)="deleteTask(task)" pTooltip="Delete" tooltipPosition="top" />
             </div>
           </td>
         </tr>
@@ -190,25 +142,6 @@
       </ng-template>
     </p-table>
 
-    <!-- Bulk Actions -->
-    <div class="p-3 border-top bulk-actions" *ngIf="selectedTasks.length > 0">
-      <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small">
-          <i class="pi pi-check-square me-1"></i>
-          <strong>{{ selectedTasks.length }}</strong> task(s) selected
-        </span>
-        <div class="d-flex gap-2">
-          <p-button
-            label="Delete Selected"
-            icon="pi pi-trash"
-            severity="danger"
-            size="small"
-            (click)="deleteSelectedTasks()"
-          >
-          </p-button>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
