@@ -27,6 +27,10 @@ export class AuthService {
     return sessionStorage.getItem('token');
   }
 
+  getUserDetails(): string | null {
+    return JSON.parse(sessionStorage.getItem('userDetails') || '');
+  }
+
   isLoggedIn(): boolean {
     return !!this.getToken();
   }

@@ -2,6 +2,7 @@ import { Component, Injector, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { AppComponentBase } from '../common-shared/app-component-base';
+import { AuthService } from '../../services/auth-service';
 
 @Component({
   selector: 'app-header-portal',
@@ -13,9 +14,9 @@ export class HeaderPortal extends AppComponentBase implements OnInit {
   @ViewChild('profileMenu') profileMenu!: Menu;
 
   userInfo = {
-    name: 'John Doe',
-    designation: 'System Administrator',
-    avatar: 'https://i.pravatar.cc/150?img=12',
+    name: this.userDetails?.username,
+    designation: String((this.userDetails?.role)).toUpperCase(),
+    avatar: '',
   };
 
   profileMenuItems: MenuItem[] = [];
