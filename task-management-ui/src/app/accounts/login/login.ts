@@ -41,7 +41,9 @@ export class Login extends AppComponentBase implements OnInit {
         // TODO 1: Save data in sessionStorage for use
         sessionStorage.setItem('token', res?.data?.token);
         sessionStorage.setItem('userDetails', JSON.stringify(res?.data?.user));
-        this.routerNavigate('portal');
+        this._router.navigate(['/portal'], {
+          replaceUrl: true
+        });
       },
       error: (err: any) => {
         this.isSubmitLoader = false;
