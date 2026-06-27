@@ -49,7 +49,7 @@
         </div>
 
         <!-- Status Filter -->
-        <div class="col-12 col-md-2">
+        <div class="col-12 col-md-3">
           <label class="d-block small text-muted mb-1">Status</label>
           <p-select
             [options]="statusOptions"
@@ -62,22 +62,8 @@
           </p-select>
         </div>
 
-        <!-- Priority Filter -->
-        <div class="col-12 col-md-2">
-          <label class="d-block small text-muted mb-1">Priority</label>
-          <p-select
-            [options]="priorityOptions"
-            [(ngModel)]="selectedPriority"
-            placeholder="All Priorities"
-            [showClear]="true"
-            (onChange)="applyFilters()"
-            styleClass="w-100"
-          >
-          </p-select>
-        </div>
-
         <!-- Clear -->
-        <div class="col-12 col-md-2">
+        <div class="col-12 col-md-3">
           <p-button
             label="Clear Filters"
             [text]="true"
@@ -115,7 +101,6 @@
           <th style="min-width: 12rem">ID</th>
           <th style="min-width: 12rem">TASK</th>
           <th style="min-width: 9rem">ASSIGNEE</th>
-          <th style="width: 9rem">PRIORITY</th>
           <th style="width: 10rem">STATUS</th>
           <th style="width: 9rem">DUE DATE</th>
           <th style="width: 6rem">ACTIONS</th>
@@ -137,14 +122,6 @@
             <div class="d-flex align-items-center gap-2">
               <span class="small">{{ task.assignee }}</span>
             </div>
-          </td>
-          <td>
-            <p-tag
-              size="small"
-              [value]="task.priority | titlecase"
-              [severity]="getPrioritySeverity(task.priority)"
-            >
-            </p-tag>
           </td>
           <td>
             <p-tag
@@ -227,14 +204,6 @@
             severity="danger"
             size="small"
             (click)="deleteSelectedTasks()"
-          >
-          </p-button>
-          <p-button
-            label="Export"
-            icon="pi pi-download"
-            severity="secondary"
-            size="small"
-            (click)="exportTasks('csv')"
           >
           </p-button>
         </div>
