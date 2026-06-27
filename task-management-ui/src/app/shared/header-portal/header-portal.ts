@@ -42,6 +42,6 @@ export class HeaderPortal extends AppComponentBase implements OnInit {
   }
   onLogout(){
     this.routerNavigate('account/login')
-    
+    sessionStorage.clear(); 
   }
 }

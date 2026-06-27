@@ -4,7 +4,7 @@
   <div class="form-group">
     <p-inputgroup>
       <p-inputgroup-addon><i class="pi pi-user"></i></p-inputgroup-addon>
-      <input pInputText type="text" placeholder="Username" formControlName="username" autocomplete="off" />
+      <input pInputText type="text" placeholder="Username" formControlName="username" />
     </p-inputgroup>
     <app-validation-message [formCtrl]="registerForm.get('username')" [type]="'Username'" />
   </div>
@@ -13,7 +13,7 @@
   <div class="form-group">
     <p-inputgroup>
       <p-inputgroup-addon><i class="pi pi-envelope"></i></p-inputgroup-addon>
-      <input pInputText type="email" placeholder="Email" formControlName="email" autocomplete="off" />
+      <input pInputText type="email" placeholder="Email" formControlName="email" />
     </p-inputgroup>
     <app-validation-message [formCtrl]="registerForm.get('email')" [type]="'Email'" />
   </div>

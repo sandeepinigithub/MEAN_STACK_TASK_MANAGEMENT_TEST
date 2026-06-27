@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Injector, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AppComponentBase } from '../../shared/common-shared/app-component-base';
+import { UserService } from '../../services/user-service';
 
 @Component({
   selector: 'app-register',
@@ -22,7 +23,7 @@ export class Register extends AppComponentBase implements OnInit {
     { label: 'Employee', value: 'employee' },
   ];
 
-  constructor(injector: Injector, private fb: FormBuilder) {
+  constructor(injector: Injector, private fb: FormBuilder, private userService: UserService) {
     super(injector);
     this.formInitialisation();
   }
@@ -30,13 +31,13 @@ export class Register extends AppComponentBase implements OnInit {
   ngOnInit(): void {
 
   }
-  
+
   formInitialisation() {
     this.registerForm = this.fb.group(
       {
         username: ['', [Validators.required, Validators.minLength(3)]],
         email: ['', [Validators.required, Validators.email]],
-        role: ['', Validators.required],
+        role: [{ value: 'employee', disabled: true }, [Validators.required]],
         password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', Validators.required],
       },
@@ -62,9 +63,24 @@ export class Register extends AppComponentBase implements OnInit {
       this.registerForm.markAllAsTouched();
       return;
     }
-    // TODO: call auth service register API
-    console.log('Register payload:', this.registerForm.value);
-    this.onClose.emit();
+
+    const { confirmPassword, ...payload } = this.registerForm.getRawValue();
+    this.isSubmitLoader = true;
+
+    this.userService.createUser(payload).subscribe({
+      next: () => {
+        this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Account created successfully.' });
+        setTimeout(() => this.onClose.emit(), 800);
+      },
+      error: (err: any) => {
+        this.isSubmitLoader = false;
+        const msg = err?.error?.message || 'Registration failed. Please try again.';
+        this._messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+      },
+      complete: () => {
+        this.isSubmitLoader = false;
+      },
+    });
   }
 
   cancel(): void {
