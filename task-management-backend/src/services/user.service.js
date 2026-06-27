@@ -132,4 +132,98 @@ const getUserById = async (requestingUser, targetUserId) => {
   throw new ApiError(403, "Access denied");
 };
 
-module.exports = { getUsers, getTeamLeadsWithStats, assignTeamLead, getUserById };
+/**
+ * Manager: create a new user with any role.
+ * - teamlead role → stores managerId (set to creating manager if omitted)
+ * - employee role → stores teamLeadId (optional)
+ */
+const createUser = async (requestingUser, payload) => {
+  const { username, email, password, role, teamLeadId, managerId } = payload;
+
+  const existing = await User.findOne({ email });
+  if (existing) throw new ApiError(409, "A user with this email already exists");
+
+  if (role === "employee" && teamLeadId) {
+    const tl = await User.findById(teamLeadId);
+    if (!tl || tl.role !== "teamlead") {
+      throw new ApiError(400, "Provided teamLeadId does not belong to a team lead");
+    }
+  }
+
+  if (role === "teamlead" && managerId) {
+    const mgr = await User.findById(managerId);
+    if (!mgr || mgr.role !== "manager") {
+      throw new ApiError(400, "Provided managerId does not belong to a manager");
+    }
+  }
+
+  const user = await User.create({
+    username,
+    email,
+    password,
+    role,
+    teamLeadId: role === "employee" ? teamLeadId || null : null,
+    managerId: role === "teamlead" ? managerId || requestingUser._id : null,
+    isActive: true,
+  });
+
+  return User.findById(user._id)
+    .select("-password")
+    .populate("teamLeadId", "username email role")
+    .populate("managerId", "username email role");
+};
+
+/**
+ * Manager: update any user's details.
+ * Password is only hashed if explicitly provided (handled by model pre-save).
+ */
+const updateUser = async (targetUserId, payload) => {
+  const user = await User.findById(targetUserId);
+  if (!user) throw new ApiError(404, "User not found");
+
+  const { username, email, role, isActive, teamLeadId, managerId } = payload;
+
+  if (email && email !== user.email) {
+    const existing = await User.findOne({ email });
+    if (existing) throw new ApiError(409, "A user with this email already exists");
+    user.email = email;
+  }
+
+  if (username !== undefined) user.username = username;
+  if (role !== undefined) user.role = role;
+  if (isActive !== undefined) user.isActive = isActive;
+
+  if (teamLeadId !== undefined) user.teamLeadId = teamLeadId || null;
+  if (managerId !== undefined) user.managerId = managerId || null;
+
+  await user.save();
+
+  return User.findById(user._id)
+    .select("-password")
+    .populate("teamLeadId", "username email role")
+    .populate("managerId", "username email role");
+};
+
+/**
+ * Manager: delete a user. Prevents self-deletion.
+ */
+const deleteUser = async (requestingUser, targetUserId) => {
+  if (requestingUser._id.equals(targetUserId)) {
+    throw new ApiError(400, "You cannot delete your own account");
+  }
+
+  const user = await User.findById(targetUserId);
+  if (!user) throw new ApiError(404, "User not found");
+
+  await User.findByIdAndDelete(targetUserId);
+};
+
+module.exports = {
+  getUsers,
+  getTeamLeadsWithStats,
+  getUserById,
+  assignTeamLead,
+  createUser,
+  updateUser,
+  deleteUser,
+};

@@ -28,6 +28,33 @@ const getUserById = async (req, res) => {
   }
 };
 
+const createUser = async (req, res) => {
+  try {
+    const user = await userService.createUser(req.user, req.body);
+    return successResponse(res, 201, "User created successfully", { user });
+  } catch (error) {
+    return errorResponse(res, error.statusCode || 500, error.message);
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const user = await userService.updateUser(req.params.id, req.body);
+    return successResponse(res, 200, "User updated successfully", { user });
+  } catch (error) {
+    return errorResponse(res, error.statusCode || 500, error.message);
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    await userService.deleteUser(req.user, req.params.id);
+    return successResponse(res, 200, "User deleted successfully", null);
+  } catch (error) {
+    return errorResponse(res, error.statusCode || 500, error.message);
+  }
+};
+
 const assignTeamLead = async (req, res) => {
   try {
     const employee = await userService.assignTeamLead(req.params.id, req.body.teamLeadId);
@@ -37,4 +64,12 @@ const assignTeamLead = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getTeamLeadsWithStats, getUserById, assignTeamLead };
+module.exports = {
+  getUsers,
+  getTeamLeadsWithStats,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  assignTeamLead,
+};
