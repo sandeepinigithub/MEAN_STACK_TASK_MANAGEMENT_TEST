@@ -11,6 +11,7 @@ import { AppComponentBase } from '../../shared/common-shared/app-component-base'
 export class Login extends AppComponentBase implements OnInit {
   loginForm!: FormGroup;
   showPassword = false;
+  showRegisterModal = false;
   // isSubmitLoader = false;
 
   constructor(injector: Injector, private fb: FormBuilder) {
@@ -19,7 +20,7 @@ export class Login extends AppComponentBase implements OnInit {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }

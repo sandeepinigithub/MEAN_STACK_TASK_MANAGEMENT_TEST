@@ -70,17 +70,19 @@
     margin-bottom: 4px;
 }
 
-.forgot-password {
+.register-link {
     text-align: center;
-    margin-top: 12px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #666;
 
     a {
-        color: #4f46e5;
-        font-size: 13px;
+        color: #274472;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 4px;
         text-decoration: none;
 
-        &:hover {
-            text-decoration: underline;
-        }
+        &:hover { text-decoration: underline; }
     }
 }
