@@ -87,6 +87,14 @@ const getTeamLeadsWithStats = async () => {
 };
 
 /**
+ * Master user list — returns all users with only id and username.
+ */
+const getMasterUserList = async () => {
+  const users = await User.find({}).select("_id username role").lean();
+  return users.map((u) => ({ _id: u._id, username: u.username, role: u.role }));
+};
+
+/**
  * Manager: assign a team lead to an employee.
  */
 const assignTeamLead = async (employeeId, teamLeadId) => {
@@ -221,6 +229,7 @@ const deleteUser = async (requestingUser, targetUserId) => {
 module.exports = {
   getUsers,
   getTeamLeadsWithStats,
+  getMasterUserList,
   getUserById,
   assignTeamLead,
   createUser,

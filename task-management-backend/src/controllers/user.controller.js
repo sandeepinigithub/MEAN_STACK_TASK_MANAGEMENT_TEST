@@ -10,6 +10,15 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getMasterUserList = async (req, res) => {
+  try {
+    const users = await userService.getMasterUserList();
+    return successResponse(res, 200, "Master user list retrieved successfully", { users });
+  } catch (error) {
+    return errorResponse(res, error.statusCode || 500, error.message);
+  }
+};
+
 const getTeamLeadsWithStats = async (req, res) => {
   try {
     const teamLeads = await userService.getTeamLeadsWithStats();
@@ -67,6 +76,7 @@ const assignTeamLead = async (req, res) => {
 module.exports = {
   getUsers,
   getTeamLeadsWithStats,
+  getMasterUserList,
   getUserById,
   createUser,
   updateUser,
