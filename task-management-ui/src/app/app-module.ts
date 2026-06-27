@@ -1,29 +1,28 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
 
-// ========================== PrimeNg Setup Start ========================================
 import { providePrimeNG } from 'primeng/config';
 import MyPreset from './../assets/scss/mypreset';
-// ========================== PrimeNg Setup End ========================================
+
+import { authInterceptor } from './accounts/auth/interceptor/auth-interceptor';
+import { errorInterceptor } from './accounts/auth/interceptor/error-interceptor';
 
 @NgModule({
   declarations: [App],
   imports: [BrowserModule, AppRoutingModule],
   providers: [
     provideBrowserGlobalErrorListeners(),
-    // ========================== PrimeNg Setup Start ========================================
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
     providePrimeNG({
       theme: {
-        preset: MyPreset, // Custom Theme
-        options: {
-          darkModeSelector: 'none',
-        },
+        preset: MyPreset,
+        options: { darkModeSelector: 'none' },
       },
     }),
-    // ========================== PrimeNg Setup End ========================================
   ],
   bootstrap: [App],
 })
