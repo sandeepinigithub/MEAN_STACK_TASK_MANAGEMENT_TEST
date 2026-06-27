@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate-v2");
+const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const TASK_STATUSES = ["pending", "inprogress", "completed"];
 
@@ -55,6 +56,7 @@ taskSchema.index({ createdBy: 1 });
 taskSchema.index({ teamLeadId: 1 });
 
 taskSchema.plugin(mongoosePaginate);
+taskSchema.plugin(mongooseAggregatePaginate);
 
 taskSchema.statics.TASK_STATUSES = TASK_STATUSES;
 

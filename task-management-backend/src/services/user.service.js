@@ -1,4 +1,4 @@
-const { User, Task } = require("../models");
+const { User } = require("../models");
 const ApiError = require("../utils/apiError");
 
 /**
@@ -7,83 +7,161 @@ const ApiError = require("../utils/apiError");
  */
 const getUsers = async (requestingUser, query = {}) => {
   const { role: filterRole, page = 1, limit = 20 } = query;
-  const skip = (page - 1) * limit;
 
   let filter = {};
 
   if (requestingUser.role === "manager") {
-    // Manager sees everyone except themselves
     filter._id = { $ne: requestingUser._id };
     if (filterRole) filter.role = filterRole;
   } else if (requestingUser.role === "teamlead") {
-    // Team Lead sees only their employees
     filter.teamLeadId = requestingUser._id;
     filter.role = "employee";
   } else {
     throw new ApiError(403, "Access denied");
   }
 
-  const [users, total] = await Promise.all([
-    User.find(filter)
-      .select("-password")
-      .populate("teamLeadId", "username email")
-      .populate("managerId", "username email")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit)),
-    User.countDocuments(filter),
-  ]);
+  const options = {
+    page: Number(page),
+    limit: Number(limit),
+    sort: { createdAt: -1 },
+    select: "-password",
+    populate: [
+      { path: "teamLeadId", select: "username email" },
+      { path: "managerId", select: "username email" },
+    ],
+  };
+
+  const result = await User.paginate(filter, options);
 
   return {
-    users,
+    users: result.docs,
     meta: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / limit),
+      total: result.totalDocs,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
     },
   };
 };
 
 /**
- * Manager: get all team leads with their task statistics and employee counts.
+ * Manager: get paginated team leads with task statistics and employee counts.
+ * Uses a single aggregate pipeline via mongoose-aggregate-paginate-v2.
  */
-const getTeamLeadsWithStats = async () => {
-  const teamLeads = await User.find({ role: "teamlead" })
-    .select("-password")
-    .populate("managerId", "username email")
-    .lean();
+const getTeamLeadsWithStats = async (query = {}) => {
+  const { page = 1, limit = 20 } = query;
 
-  const teamLeadIds = teamLeads.map((tl) => tl._id);
-
-  // Aggregate task counts per team lead
-  const taskStats = await Task.aggregate([
-    { $match: { teamLeadId: { $in: teamLeadIds } } },
+  const pipeline = [
+    { $match: { role: "teamlead" } },
+    // Lookup tasks owned by this team lead
     {
-      $group: {
-        _id: "$teamLeadId",
-        total: { $sum: 1 },
-        pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
-        inprogress: { $sum: { $cond: [{ $eq: ["$status", "inprogress"] }, 1, 0] } },
-        completed: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+      $lookup: {
+        from: "tasks",
+        localField: "_id",
+        foreignField: "teamLeadId",
+        as: "teamTasks",
       },
     },
-  ]);
+    // Lookup employees under this team lead
+    {
+      $lookup: {
+        from: "users",
+        let: { tlId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$teamLeadId", "$$tlId"] },
+                  { $eq: ["$role", "employee"] },
+                ],
+              },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "employeeData",
+      },
+    },
+    // Lookup manager details
+    {
+      $lookup: {
+        from: "users",
+        let: { mgrId: "$managerId" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$_id", "$$mgrId"] } } },
+          { $project: { username: 1, email: 1 } },
+        ],
+        as: "managerInfo",
+      },
+    },
+    // Build computed fields
+    {
+      $addFields: {
+        taskStats: {
+          total: { $size: "$teamTasks" },
+          pending: {
+            $size: {
+              $filter: {
+                input: "$teamTasks",
+                as: "t",
+                cond: { $eq: ["$$t.status", "pending"] },
+              },
+            },
+          },
+          inprogress: {
+            $size: {
+              $filter: {
+                input: "$teamTasks",
+                as: "t",
+                cond: { $eq: ["$$t.status", "inprogress"] },
+              },
+            },
+          },
+          completed: {
+            $size: {
+              $filter: {
+                input: "$teamTasks",
+                as: "t",
+                cond: { $eq: ["$$t.status", "completed"] },
+              },
+            },
+          },
+        },
+        employeeCount: {
+          $ifNull: [{ $arrayElemAt: ["$employeeData.count", 0] }, 0],
+        },
+        managerId: { $arrayElemAt: ["$managerInfo", 0] },
+      },
+    },
+    // Remove intermediate lookup arrays and password
+    {
+      $project: {
+        teamTasks: 0,
+        employeeData: 0,
+        managerInfo: 0,
+        password: 0,
+      },
+    },
+  ];
 
-  // Employee counts per team lead
-  const employeeCounts = await User.aggregate([
-    { $match: { teamLeadId: { $in: teamLeadIds }, role: "employee" } },
-    { $group: { _id: "$teamLeadId", count: { $sum: 1 } } },
-  ]);
+  const options = {
+    page: Number(page),
+    limit: Number(limit),
+    sort: { createdAt: -1 },
+  };
 
-  const taskStatsMap = Object.fromEntries(taskStats.map((s) => [s._id.toString(), s]));
-  const employeeCountMap = Object.fromEntries(employeeCounts.map((e) => [e._id.toString(), e.count]));
+  const result = await User.aggregatePaginate(User.aggregate(pipeline), options);
 
-  return teamLeads.map((tl) => ({
-    ...tl,
-    taskStats: taskStatsMap[tl._id.toString()] || { total: 0, pending: 0, inprogress: 0, completed: 0 },
-    employeeCount: employeeCountMap[tl._id.toString()] || 0,
-  }));
+  return {
+    teamLeads: result.docs,
+    meta: {
+      total: result.totalDocs,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    },
+  };
 };
 
 /**
@@ -111,7 +189,10 @@ const assignTeamLead = async (employeeId, teamLeadId) => {
   employee.teamLeadId = teamLeadId;
   await employee.save();
 
-  return employee;
+  return User.findById(employee._id)
+    .select("-password")
+    .populate("teamLeadId", "username email role")
+    .populate("managerId", "username email role");
 };
 
 /**

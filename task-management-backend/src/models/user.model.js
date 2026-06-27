@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const mongoosePaginate = require("mongoose-paginate-v2");
+const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 const ROLES = ["manager", "teamlead", "employee"];
 
@@ -70,6 +72,9 @@ userSchema.pre("save", async function () {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+userSchema.plugin(mongoosePaginate);
+userSchema.plugin(mongooseAggregatePaginate);
 
 userSchema.statics.ROLES = ROLES;
 
