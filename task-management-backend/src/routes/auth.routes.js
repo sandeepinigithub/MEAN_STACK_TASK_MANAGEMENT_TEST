@@ -1,17 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
-const { authenticate } = require("../middlewares/auth.middleware");
 const { validate } = require("../middlewares/validate.middleware");
 const { registerSchema, loginSchema } = require("../validations/auth.validation");
-
-// POST /api/auth/register
+// POST /api/auth/register (public)
 router.post("/register", validate(registerSchema), authController.register);
 
-// POST /api/auth/login
+// POST /api/auth/login (public)
 router.post("/login", validate(loginSchema), authController.login);
-
-// GET /api/auth/profile  (protected)
-router.get("/profile", authenticate, authController.getProfile);
 
 module.exports = router;

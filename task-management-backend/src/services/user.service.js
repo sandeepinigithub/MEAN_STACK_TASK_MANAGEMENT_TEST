@@ -193,29 +193,6 @@ const getMasterUserList = async (requestingUser) => {
 };
 
 /**
- * Manager: assign a team lead to an employee.
- */
-const assignTeamLead = async (employeeId, teamLeadId) => {
-  const [employee, teamLead] = await Promise.all([
-    User.findById(employeeId),
-    User.findById(teamLeadId),
-  ]);
-
-  if (!employee) throw new ApiError(404, "Employee not found");
-  if (employee.role !== "employee") throw new ApiError(400, "Target user is not an employee");
-  if (!teamLead) throw new ApiError(404, "Team lead not found");
-  if (teamLead.role !== "teamlead") throw new ApiError(400, "Target user is not a team lead");
-
-  employee.teamLeadId = teamLeadId;
-  await employee.save();
-
-  return User.findById(employee._id)
-    .select("-password")
-    .populate("teamLeadId", "username email role")
-    .populate("managerId", "username email role");
-};
-
-/**
  * Get a single user by ID (with role-based visibility).
  */
 const getUserById = async (requestingUser, targetUserId) => {
@@ -332,7 +309,6 @@ module.exports = {
   getTeamLeadsWithStats,
   getMasterUserList,
   getUserById,
-  assignTeamLead,
   createUser,
   updateUser,
   deleteUser,

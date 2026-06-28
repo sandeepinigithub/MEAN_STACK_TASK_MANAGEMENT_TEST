@@ -1,5 +1,4 @@
 const Joi = require("joi");
-
 const registerSchema = Joi.object({
   username: Joi.string().min(3).max(30).trim().required().messages({
     "string.min": "Username must be at least 3 characters",
@@ -14,9 +13,6 @@ const registerSchema = Joi.object({
     "string.min": "Password must be at least 6 characters",
     "any.required": "Password is required",
   }),
-  role: Joi.string().valid("manager", "teamlead", "employee").default("employee"),
-  teamLeadId: Joi.string().hex().length(24).optional().allow(null),
-  managerId: Joi.string().hex().length(24).optional().allow(null),
 });
 
 const loginSchema = Joi.object({

@@ -7,7 +7,6 @@ const { validate } = require("../middlewares/validate.middleware");
 const {
   createUserSchema,
   updateUserSchema,
-  assignTeamLeadSchema,
 } = require("../validations/user.validation");
 
 // All user routes require authentication
@@ -16,7 +15,7 @@ router.use(authenticate);
 // GET  /api/users          — Manager: all users | Team Lead: their employees
 router.get("/", authorize("manager", "teamlead"), userController.getUsers);
 
-// POST /api/users          — Manager only: create a new user
+// POST /api/users         — Manager: all users | Team Lead: their employees
 router.post("/", authorize("manager"), validate(createUserSchema), userController.createUser);
 
 // GET  /api/users/team-leads — Manager only: team leads with task/employee stats
@@ -34,13 +33,5 @@ router.patch("/:id", authorize("manager"), validate(updateUserSchema), userContr
 
 // DELETE /api/users/:id    — Manager only: remove a user
 router.delete("/:id", authorize("manager"), userController.deleteUser);
-
-// PATCH  /api/users/:id/assign-team-lead — Manager only: quick team-lead assignment
-router.patch(
-  "/:id/assign-team-lead",
-  authorize("manager"),
-  validate(assignTeamLeadSchema),
-  userController.assignTeamLead
-);
 
 module.exports = router;

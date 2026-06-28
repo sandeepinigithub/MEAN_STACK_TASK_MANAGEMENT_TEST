@@ -64,15 +64,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const assignTeamLead = async (req, res) => {
-  try {
-    const employee = await userService.assignTeamLead(req.params.id, req.body.teamLeadId);
-    return successResponse(res, 200, "Team lead assigned successfully", { user: employee });
-  } catch (error) {
-    return errorResponse(res, error.statusCode || 500, error.message);
-  }
-};
-
 module.exports = {
   getUsers,
   getTeamLeadsWithStats,
@@ -81,5 +72,4 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
-  assignTeamLead,
 };

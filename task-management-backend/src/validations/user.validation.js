@@ -53,11 +53,4 @@ const updateUserSchema = Joi.object({
   "object.min": "At least one field is required to update",
 });
 
-const assignTeamLeadSchema = Joi.object({
-  teamLeadId: objectId().required().messages({
-    "any.required": "teamLeadId is required",
-    "string.hex": "teamLeadId must be a valid user ID",
-  }),
-});
-
-module.exports = { createUserSchema, updateUserSchema, assignTeamLeadSchema };
+module.exports = { createUserSchema, updateUserSchema };
