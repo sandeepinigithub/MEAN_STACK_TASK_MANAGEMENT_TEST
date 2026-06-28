@@ -45,126 +45,6 @@ const getUsers = async (requestingUser, query = {}) => {
 };
 
 /**
- * Manager: get paginated team leads with task statistics and employee counts.
- * Uses a single aggregate pipeline via mongoose-aggregate-paginate-v2.
- */
-const getTeamLeadsWithStats = async (query = {}) => {
-  const { page = 1, limit = 20 } = query;
-
-  const pipeline = [
-    { $match: { role: "teamlead" } },
-    // Lookup tasks owned by this team lead
-    {
-      $lookup: {
-        from: "tasks",
-        localField: "_id",
-        foreignField: "teamLeadId",
-        as: "teamTasks",
-      },
-    },
-    // Lookup employees under this team lead
-    {
-      $lookup: {
-        from: "users",
-        let: { tlId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$teamLeadId", "$$tlId"] },
-                  { $eq: ["$role", "employee"] },
-                ],
-              },
-            },
-          },
-          { $count: "count" },
-        ],
-        as: "employeeData",
-      },
-    },
-    // Lookup manager details
-    {
-      $lookup: {
-        from: "users",
-        let: { mgrId: "$managerId" },
-        pipeline: [
-          { $match: { $expr: { $eq: ["$_id", "$$mgrId"] } } },
-          { $project: { username: 1, email: 1 } },
-        ],
-        as: "managerInfo",
-      },
-    },
-    // Build computed fields
-    {
-      $addFields: {
-        taskStats: {
-          total: { $size: "$teamTasks" },
-          pending: {
-            $size: {
-              $filter: {
-                input: "$teamTasks",
-                as: "t",
-                cond: { $eq: ["$$t.status", "pending"] },
-              },
-            },
-          },
-          inprogress: {
-            $size: {
-              $filter: {
-                input: "$teamTasks",
-                as: "t",
-                cond: { $eq: ["$$t.status", "inprogress"] },
-              },
-            },
-          },
-          completed: {
-            $size: {
-              $filter: {
-                input: "$teamTasks",
-                as: "t",
-                cond: { $eq: ["$$t.status", "completed"] },
-              },
-            },
-          },
-        },
-        employeeCount: {
-          $ifNull: [{ $arrayElemAt: ["$employeeData.count", 0] }, 0],
-        },
-        managerId: { $arrayElemAt: ["$managerInfo", 0] },
-      },
-    },
-    // Remove intermediate lookup arrays and password
-    {
-      $project: {
-        teamTasks: 0,
-        employeeData: 0,
-        managerInfo: 0,
-        password: 0,
-      },
-    },
-  ];
-
-  const options = {
-    page: Number(page),
-    limit: Number(limit),
-    sort: { createdAt: -1 },
-  };
-
-  const result = await User.aggregatePaginate(User.aggregate(pipeline), options);
-
-  return {
-    teamLeads: result.docs,
-    meta: {
-      total: result.totalDocs,
-      page: result.page,
-      limit: result.limit,
-      totalPages: result.totalPages,
-    },
-  };
-};
-
-/**
  * Master user list — role-scoped flat list (id + username + role).
  * Manager  → all users
  * Team Lead → self + own employees
@@ -306,7 +186,6 @@ const deleteUser = async (requestingUser, targetUserId) => {
 
 module.exports = {
   getUsers,
-  getTeamLeadsWithStats,
   getMasterUserList,
   getUserById,
   createUser,

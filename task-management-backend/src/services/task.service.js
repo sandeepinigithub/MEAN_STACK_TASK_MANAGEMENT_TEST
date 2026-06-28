@@ -199,37 +199,6 @@ const updateTask = async (requestingUser, taskId, updates) => {
 };
 
 /**
- * Reassign a task to a different user.
- */
-const reassignTask = async (requestingUser, taskId, newAssigneeId) => {
-  const task = await Task.findById(taskId);
-  if (!task) throw new ApiError(404, "Task not found");
-
-  const newAssignee = await User.findById(newAssigneeId);
-  if (!newAssignee) throw new ApiError(404, "Target user not found");
-
-  if (requestingUser.role === "manager") {
-    // Manager can reassign to anyone
-    task.assignedTo = newAssigneeId;
-    task.teamLeadId = newAssignee.teamLeadId || null;
-    if (newAssignee.role === "teamlead") task.teamLeadId = newAssignee._id;
-  } else if (requestingUser.role === "teamlead") {
-    await assertTeamLeadCanAssign(requestingUser, newAssigneeId);
-    task.assignedTo = newAssigneeId;
-    task.teamLeadId = requestingUser._id;
-  } else {
-    throw new ApiError(403, "Employees cannot reassign tasks");
-  }
-
-  await task.save();
-
-  return Task.findById(task._id)
-    .populate("assignedTo", "username email role")
-    .populate("createdBy", "username email role")
-    .populate("teamLeadId", "username email");
-};
-
-/**
  * Delete a task.
  * - Manager: can delete any task.
  * - Team Lead / Employee: can delete tasks they created.
@@ -332,7 +301,6 @@ module.exports = {
   getTaskById,
   createTask,
   updateTask,
-  reassignTask,
   deleteTask,
   getDashboardSummary,
   getRecentTasks,

@@ -18,10 +18,6 @@ router.get("/", authorize("manager", "teamlead"), userController.getUsers);
 // POST /api/users         — Manager: all users | Team Lead: their employees
 router.post("/", authorize("manager"), validate(createUserSchema), userController.createUser);
 
-// GET  /api/users/team-leads — Manager only: team leads with task/employee stats
-// Must be placed BEFORE /:id to prevent "team-leads" being treated as an id
-router.get("/team-leads", authorize("manager"), userController.getTeamLeadsWithStats);
-
 // GET  /api/users/master-list — All roles: scoped flat list (manager=all, teamlead=self+team, employee=self)
 router.get("/master-list", userController.getMasterUserList);
 

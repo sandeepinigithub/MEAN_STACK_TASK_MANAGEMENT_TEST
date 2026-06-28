@@ -46,19 +46,6 @@ const updateTask = async (req, res) => {
   }
 };
 
-const reassignTask = async (req, res) => {
-  try {
-    const task = await taskService.reassignTask(req.user, req.params.id, req.body.assignedTo);
-    const io = req.app.get("io");
-    if (io) {
-      io.emit("task:reassigned", { task, actorId: req.user._id });
-    }
-    return successResponse(res, 200, "Task reassigned successfully", { task });
-  } catch (error) {
-    return errorResponse(res, error.statusCode || 500, error.message);
-  }
-};
-
 const deleteTask = async (req, res) => {
   try {
     await taskService.deleteTask(req.user, req.params.id);
@@ -95,7 +82,6 @@ module.exports = {
   getTaskById,
   createTask,
   updateTask,
-  reassignTask,
   deleteTask,
   getDashboardSummary,
   getRecentTasks,

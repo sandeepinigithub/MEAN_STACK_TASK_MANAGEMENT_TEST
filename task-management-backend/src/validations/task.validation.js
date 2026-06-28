@@ -26,14 +26,6 @@ const updateTaskSchema = Joi.object({
   "object.min": "At least one field (title, description, status, assignedTo) is required",
 });
 
-const assignTaskSchema = Joi.object({
-  assignedTo: Joi.string().hex().length(24).required().messages({
-    "string.hex": "assignedTo must be a valid user ID",
-    "string.length": "assignedTo must be a valid user ID",
-    "any.required": "assignedTo is required",
-  }),
-});
-
 const taskQuerySchema = Joi.object({
   status: Joi.string().valid("pending", "inprogress", "completed").optional(),
   page: Joi.number().integer().min(1).default(1),
@@ -41,4 +33,4 @@ const taskQuerySchema = Joi.object({
   assignedTo: Joi.string().hex().length(24).optional(),
 });
 
-module.exports = { createTaskSchema, updateTaskSchema, assignTaskSchema, taskQuerySchema };
+module.exports = { createTaskSchema, updateTaskSchema, taskQuerySchema };

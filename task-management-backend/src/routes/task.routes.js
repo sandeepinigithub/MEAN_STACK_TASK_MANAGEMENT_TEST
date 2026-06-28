@@ -6,7 +6,6 @@ const { validate } = require("../middlewares/validate.middleware");
 const {
   createTaskSchema,
   updateTaskSchema,
-  assignTaskSchema,
   taskQuerySchema,
 } = require("../validations/task.validation");
 
@@ -30,9 +29,6 @@ router.get("/:id", taskController.getTaskById);
 
 // PATCH /api/tasks/:id
 router.patch("/:id", validate(updateTaskSchema), taskController.updateTask);
-
-// PATCH /api/tasks/:id/assign  - Manager and Team Lead only
-router.patch("/:id/assign", validate(assignTaskSchema), taskController.reassignTask);
 
 // DELETE /api/tasks/:id
 router.delete("/:id", taskController.deleteTask);
