@@ -3,6 +3,7 @@ import { MenuItem } from 'primeng/api';
 import { AppComponentBase } from '../../../../shared/common-shared/app-component-base';
 import { TaskService } from '../../../../services/task-service';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { UserService } from '../../../../services/user-service';
 
 
 @Component({
@@ -19,6 +20,8 @@ export class Tasks extends AppComponentBase implements OnInit {
 
   searchText = '';
   selectedStatus = '';
+  assignedTo = '';
+  createdBy = '';
 
   searchSubject: any = new Subject();
 
@@ -34,11 +37,14 @@ export class Tasks extends AppComponentBase implements OnInit {
     { label: 'Refresh', icon: 'pi pi-refresh', command: () => this.loadTasks() },
   ]);
 
-  constructor(injector: Injector, private taskService: TaskService, private _cdr: ChangeDetectorRef) {
+  userOptions: any = []
+
+  constructor(injector: Injector, private taskService: TaskService, private _userService: UserService, private _cdr: ChangeDetectorRef) {
     super(injector);
   }
 
   ngOnInit(): void {
+    this.loadMasterUsers()
     this.searchSubject.pipe(
       debounceTime(400),
       distinctUntilChanged(),
@@ -63,6 +69,12 @@ export class Tasks extends AppComponentBase implements OnInit {
     };
     if (this.selectedStatus) {
       params['status'] = this.selectedStatus;
+    }
+    if (this.assignedTo) {
+      params['assignedTo'] = this.assignedTo;
+    }
+    if (this.createdBy) {
+      params['createdBy'] = this.createdBy;
     }
     if (this.searchText.trim().length > 0) {
       params['search'] = this.searchText;
@@ -89,16 +101,18 @@ export class Tasks extends AppComponentBase implements OnInit {
     this.first = 0;
     this.searchSubject.next(this.searchText);
   }
-
-  onStatusChange(): void {
+  filterChange() {
     this.page = 1;
     this.first = 0;
     this.loadTasks();
+
   }
 
   clearFilters(): void {
     this.searchText = '';
     this.selectedStatus = '';
+    this.createdBy = '';
+    this.assignedTo = '';
     this.page = 1;
     this.first = 0;
     this.loadTasks();
@@ -138,5 +152,21 @@ export class Tasks extends AppComponentBase implements OnInit {
   getStatusLabel(status: string): string {
     const map: any = { completed: 'Completed', inprogress: 'In Progress', pending: 'Pending' };
     return map[status] ?? status;
+  }
+
+  loadMasterUsers(): void {
+    this._userService.getUsersMasterList().subscribe({
+      next: (res: any) => {
+        const users: any[] = res?.data?.users ?? res?.data ?? [];
+        this.userOptions = users.map((u: any) => ({
+          label: `${u._id == this.userDetails?._id ? 'Me' : u.username + ' (' + u.role.toUpperCase() + ')'}`,
+          value: String(u._id),
+        }));
+        this._cdr.detectChanges();
+      },
+      error: () => {
+        this._messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Could not load users.' });
+      },
+    });
   }
 }

@@ -55,7 +55,7 @@ export class TaskForm extends AppComponentBase implements OnInit {
     if (this.isEditMode && this.taskId) {
       this.loadTask(this.taskId);
     } else if (this.canAssign) {
-      this.loadUsers();
+      this.loadMasterUsers();
     }
   }
 
@@ -68,12 +68,12 @@ export class TaskForm extends AppComponentBase implements OnInit {
     });
   }
 
-  private loadUsers(): void {
+  private loadMasterUsers(): void {
     this.userService.getUsersMasterList().subscribe({
       next: (res: any) => {
         const users: any[] = res?.data?.users ?? res?.data ?? [];
         this.userOptions = users.map((u: any) => ({
-          label: `${u._id == this.userDetails?._id ? 'Me' : u.username + '-' + u.role }`,
+          label: `${u._id == this.userDetails?._id ? 'Me' : u.username + ' (' + u.role.toUpperCase() + ')' }`,
           value: String(u._id),
         }));
         this._cdr.detectChanges();

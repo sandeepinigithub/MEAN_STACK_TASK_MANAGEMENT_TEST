@@ -1,4 +1,7 @@
-<div class="tasks-container container-fluid py-4" *appShowGridAction="getActionPermissions('Portal.TaskManagement.Tasks');permissonValue: 'view'">
+<div
+  class="tasks-container container-fluid py-4"
+  *appShowGridAction="getActionPermissions('Portal.TaskManagement.Tasks'); permissonValue: 'view'"
+>
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center gap-3">
@@ -7,7 +10,11 @@
       </div>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <p-button *appShowGridAction="getActionPermissions('Portal.TaskManagement.Tasks');permissonValue: 'add'"
+      <p-button
+        *appShowGridAction="
+          getActionPermissions('Portal.TaskManagement.Tasks');
+          permissonValue: 'add'
+        "
         label="New Task"
         icon="pi pi-plus"
         severity="primary"
@@ -32,7 +39,7 @@
     <div class="p-3">
       <div class="row g-3 align-items-end">
         <!-- Search -->
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-md-3">
           <label class="d-block small text-muted mb-1">Search</label>
           <p-inputgroup>
             <p-inputgroup-addon>
@@ -49,14 +56,45 @@
         </div>
 
         <!-- Status Filter -->
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-2">
           <label class="d-block small text-muted mb-1">Status</label>
           <p-select
             [options]="statusOptions"
             [(ngModel)]="selectedStatus"
             placeholder="All Statuses"
             [showClear]="true"
-            (onChange)="onStatusChange()"
+            (onChange)="filterChange()"
+            class="w-100"
+          >
+          </p-select>
+        </div>
+
+        <div class="col-12 col-md-2">
+          <label class="d-block small text-muted mb-1"> Assign To </label>
+          <p-select
+            [(ngModel)]="assignedTo"
+            [options]="userOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select"
+            [filter]="true"
+            filterPlaceholder="Search users"
+            (onChange)="filterChange()"
+            class="w-100"
+          >
+          </p-select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="d-block small text-muted mb-1"> Created By </label>
+          <p-select
+            [(ngModel)]="createdBy"
+            [options]="userOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select"
+            [filter]="true"
+            filterPlaceholder="Search users"
+            (onChange)="filterChange()"
             class="w-100"
           >
           </p-select>
@@ -95,7 +133,7 @@
         <tr>
           <th style="min-width: 12rem">TASK</th>
           <th style="min-width: 9rem">ASSIGNED TO</th>
-          <th style="min-width: 9rem">ASSIGNED BY</th>
+          <th style="min-width: 9rem">CREATED BY</th>
           <th style="width: 10rem">STATUS</th>
           <th style="width: 9rem">DATE</th>
           <th style="width: 6rem">ACTIONS</th>
@@ -109,14 +147,14 @@
           </td>
           <td>
             @if (task.assignedTo?._id == userDetails?._id) {
-              <p-chip label="Me" class="chip-sm"/>
+              <p-chip label="Me" class="chip-sm" />
             } @else {
               <span class="small">{{ task.assignedTo?.username ?? '—' }}</span>
             }
           </td>
           <td>
             @if (task.createdBy?._id == userDetails?._id) {
-              <p-chip label="Me" class="chip-sm"/>
+              <p-chip label="Me" class="chip-sm" />
             } @else {
               <span class="small">{{ task.createdBy?.username ?? '—' }}</span>
             }

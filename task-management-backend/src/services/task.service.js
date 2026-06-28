@@ -2,43 +2,65 @@ const { Task, User } = require("../models");
 const ApiError = require("../utils/apiError");
 
 /**
- * Build a task filter based on the requesting user's role.
+ * Resolves the assignedTo constraint based on the requesting user's role.
+ *
+ * - manager  : no constraint by default; optionally scoped to a specific user.
+ * - teamlead : scoped to themselves + their direct reports; optionally narrowed to one member.
+ * - employee : always scoped to themselves only.
+ */
+const resolveAssignedToScope = async (requestingUser, assignedTo) => {
+  const { role, _id } = requestingUser;
+
+  if (role === "manager") {
+    return assignedTo ? { assignedTo } : {};
+  }
+
+  if (role === "teamlead") {
+    const teamMembers = await User.find({ teamLeadId: _id }).select("_id");
+    const teamMemberIds = [...teamMembers.map((m) => m._id), _id];
+    return { assignedTo: assignedTo ?? { $in: teamMemberIds } };
+  }
+  // employee — always restricted to self
+  return { assignedTo: _id };
+};
+
+/**
+ * Builds a MongoDB filter for task queries, applying:
+ *   1. Role-based visibility scope  (who can see which tasks)
+ *   2. Optional status filter
+ *   3. Optional full-text search    (title / description, case-insensitive)
+ *   4. Optional createdBy filter
  */
 const buildTaskFilter = async (requestingUser, queryFilters = {}) => {
-  const filter = {};
-  const { search, status, assignedTo } = queryFilters;
+  const { search, status, assignedTo, createdBy } = queryFilters;
 
-  if (requestingUser.role === "manager") {
-    // Manager sees all tasks
-    if (assignedTo) filter.assignedTo = assignedTo;
-  } else if (requestingUser.role === "teamlead") {
-    // Team lead sees tasks within their team (including their own)
-    const teamMembers = await User.find({ teamLeadId: requestingUser._id }).select("_id");
-    const teamMemberIds = teamMembers.map((m) => m._id);
-    teamMemberIds.push(requestingUser._id);
-    filter.assignedTo = assignedTo ? assignedTo : { $in: teamMemberIds };
-  } else {
-    // Employee sees only tasks assigned to themselves
-    filter.assignedTo = requestingUser._id;
-  }
-  if (status) filter.status = status;
-  if (search?.trim()) {
-    filter.$or = [
-      { title: { $regex: search.trim(), $options: "i" } },
-      { description: { $regex: search.trim(), $options: "i" } },
-    ];
-  }
+  const scopeFilter = await resolveAssignedToScope(requestingUser, assignedTo);
+  const statusFilter = status ? { status } : {};
+  const createdByFilter = createdBy ? { createdBy } : {};
+  const searchFilter = search?.trim()
+    ? {
+      $or: [
+        { title: { $regex: search.trim(), $options: "i" } },
+        { description: { $regex: search.trim(), $options: "i" } },
+      ]
+    }
+    : {};
 
-  return filter;
+  return {
+    ...scopeFilter,
+    ...statusFilter,
+    ...createdByFilter,
+    ...searchFilter,
+  };
 };
 
 /**
  * Get paginated task list.
  */
 const getTasks = async (requestingUser, query = {}) => {
-  const { page = 1, limit = 10, search, status, assignedTo } = query;
+  const { page = 1, limit = 10, search, status, assignedTo, createdBy } = query;
 
-  const filter = await buildTaskFilter(requestingUser, { search, status, assignedTo });
+  const filter = await buildTaskFilter(requestingUser, { search, status, assignedTo, createdBy });
 
   const options = {
     page: Number(page),
