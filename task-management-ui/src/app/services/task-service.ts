@@ -6,10 +6,16 @@ import { environment } from '../../environments/environment.prod';
 export class TaskService {
   private readonly base = `${environment.baseUrl}`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getTasks(params?: any) {
     return this.http.get(`${this.base}/api/tasks`, { params });
+  }
+  getDashboardSummary() {
+    return this.http.get(`${this.base}/api/tasks/dashboard/summary`);
+  }
+  getRecentTasks() {
+    return this.http.get(`${this.base}/api/tasks/dashboard/recent`);
   }
 
   getTaskById(id: string) {

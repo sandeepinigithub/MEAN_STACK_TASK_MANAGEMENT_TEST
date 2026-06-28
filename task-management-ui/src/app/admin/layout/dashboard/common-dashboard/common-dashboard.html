@@ -3,7 +3,7 @@
   <div class="d-flex align-items-center justify-content-end mb-4">
     <div class="text-muted small">
       <i class="pi pi-calendar me-1"></i>
-      June 27, 2026
+      {{ dateUtil.formatDate(today) }}
     </div>
   </div>
 
@@ -49,17 +49,14 @@
             <p-table [value]="recentTasks" [paginator]="false" class="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th style="width: 110px">Task ID</th>
                   <th>Title</th>
-                  <th>Assignee</th>
-                  <th style="width: 110px">Priority</th>
+                  <th>Assigned To</th>
+                  <th>Created By</th>
                   <th style="width: 130px">Status</th>
-                  <th style="width: 130px">Due Date</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-task>
                 <tr>
-                  <td class="fw-bold text-primary">{{ task.id }}</td>
                   <td>{{ task.title }}</td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
@@ -67,10 +64,9 @@
                     </div>
                   </td>
                   <td>
-                    <p-tag
-                      [value]="task.priority | titlecase"
-                      [severity]="getPrioritySeverity(task.priority)"
-                    ></p-tag>
+                    <div class="d-flex align-items-center gap-2">
+                      <span>{{ task.assignee }}</span>
+                    </div>
                   </td>
                   <td>
                     <p-tag
@@ -78,7 +74,6 @@
                       [severity]="getStatusSeverity(task.status)"
                     ></p-tag>
                   </td>
-                  <td class="text-muted small text-nowrap">{{ task.dueDate }}</td>
                 </tr>
               </ng-template>
               <ng-template pTemplate="emptymessage">

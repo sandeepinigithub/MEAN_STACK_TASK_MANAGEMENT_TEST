@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
+import { AppComponentBase } from '../../../../shared/common-shared/app-component-base';
+import { TaskService } from '../../../../services/task-service';
 
 type TagSeverity = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
 
@@ -13,9 +15,8 @@ interface RecentTask {
   id: string;
   title: string;
   assignee: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'completed' | 'in-progress' | 'pending' | 'overdue';
-  dueDate: string;
+  createdBy: string;
+  status: 'completed' | 'inprogress' | 'pending';
 }
 
 @Component({
@@ -24,104 +25,53 @@ interface RecentTask {
   templateUrl: './common-dashboard.html',
   styleUrl: './common-dashboard.scss',
 })
-export class CommonDashboard implements OnInit {
+export class CommonDashboard extends AppComponentBase implements OnInit {
   loading = false;
 
-  summaryCards: SummaryCard[] = [
-    {
-      label: 'Total Tasks',
-      value: 248,
-      icon: 'pi-clipboard',
-      colorClass: 'bg-primary',
-    },
-    {
-      label: 'Completed',
-      value: 182,
-      icon: 'pi-check-circle',
-      colorClass: 'bg-success',
-    },
-    {
-      label: 'In Progress',
-      value: 43,
-      icon: 'pi-spinner',
-      colorClass: 'bg-info',
-    },
-    {
-      label: 'Overdue',
-      value: 23,
-      icon: 'pi-exclamation-triangle',
-      colorClass: 'bg-danger',
-    },
-  ];
+  summaryCards: SummaryCard[] = [];
+  recentTasks: RecentTask[] = [];
 
-  recentTasks: RecentTask[] = [
-    {
-      id: 'TSK-001',
-      title: 'Design new landing page',
-      assignee: 'Alice Johnson',
-      priority: 'high',
-      status: 'in-progress',
-      dueDate: 'Jun 28, 2026',
-    },
-    {
-      id: 'TSK-002',
-      title: 'Fix authentication bug',
-      assignee: 'Bob Smith',
-      priority: 'high',
-      status: 'completed',
-      dueDate: 'Jun 25, 2026',
-    },
-    {
-      id: 'TSK-003',
-      title: 'Write API documentation',
-      assignee: 'Carol White',
-      priority: 'medium',
-      status: 'pending',
-      dueDate: 'Jun 30, 2026',
-    },
-    {
-      id: 'TSK-004',
-      title: 'Database performance tuning',
-      assignee: 'David Lee',
-      priority: 'high',
-      status: 'overdue',
-      dueDate: 'Jun 20, 2026',
-    },
-    {
-      id: 'TSK-005',
-      title: 'Set up CI/CD pipeline',
-      assignee: 'Eva Martinez',
-      priority: 'medium',
-      status: 'in-progress',
-      dueDate: 'Jul 02, 2026',
-    },
-    {
-      id: 'TSK-006',
-      title: 'User acceptance testing',
-      assignee: 'Frank Chen',
-      priority: 'low',
-      status: 'pending',
-      dueDate: 'Jul 05, 2026',
-    },
-  ];
+  today = new Date();
 
-  ngOnInit(): void {}
+  constructor(private injector: Injector, private _taskService: TaskService, private _cdr: ChangeDetectorRef) {
+    super(injector)
 
-  getPrioritySeverity(priority: string): TagSeverity {
-    const map: Record<string, TagSeverity> = {
-      high: 'danger',
-      medium: 'warn',
-      low: 'secondary',
-    };
-    return map[priority] ?? 'secondary';
+  }
+
+  ngOnInit(): void {
+    this.getDashboardSummary();
+    this.getRecentTasks();
+  }
+
+  getDashboardSummary() {
+    this.loading = true;
+    this._taskService.getDashboardSummary().subscribe({
+      next: (res: any) => {
+        const s = res?.data?.summary;
+        if (s) {
+          this.summaryCards = [
+            { label: 'Total Tasks', value: s.total, icon: 'pi-clipboard', colorClass: 'bg-primary' },
+            { label: 'Completed', value: s.completed, icon: 'pi-check-circle', colorClass: 'bg-success' },
+            { label: 'In Progress', value: s.inprogress, icon: 'pi-spinner', colorClass: 'bg-info' },
+            { label: 'Pending', value: s.pending, icon: 'pi-exclamation-triangle', colorClass: 'bg-danger' },
+          ];
+        }
+      },
+      error: () => {
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+        this._cdr.detectChanges();
+      }
+    });
   }
 
   getStatusSeverity(status: string): TagSeverity {
     const map: Record<string, TagSeverity> = {
       completed: 'success',
-      'in-progress': 'info',
+      inprogress: 'info',
       pending: 'warn',
-      overdue: 'danger',
     };
     return map[status] ?? 'secondary';
   }
@@ -129,10 +79,32 @@ export class CommonDashboard implements OnInit {
   getStatusLabel(status: string): string {
     const map: Record<string, string> = {
       completed: 'Completed',
-      'in-progress': 'In Progress',
+      inprogress: 'Inprogress',
       pending: 'Pending',
-      overdue: 'Overdue',
     };
     return map[status] ?? status;
+  }
+
+  getRecentTasks() {
+    this.loading = true;
+    this._taskService.getRecentTasks().subscribe({
+      next: (res: any) => {
+        const tasks = res?.data?.tasks ?? [];
+        this.recentTasks = tasks.map((t: any) => ({
+          id: t._id,
+          title: t.title,
+          assignee: t.assignedTo?.username ?? '—',
+          createdBy: t.createdBy?.username ?? '—',
+          status: t.status,
+        }));
+      },
+      error: () => {
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+         this._cdr.detectChanges();
+      }
+    });
   }
 }
