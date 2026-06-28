@@ -267,4 +267,46 @@ const assertTeamLeadCanAssign = async (teamLead, targetUserId) => {
   }
 };
 
-module.exports = { getTasks, getTaskById, createTask, updateTask, reassignTask, deleteTask };
+/**
+ * Dashboard: summary card counts (total, pending, inprogress, completed).
+ * Scoped by the requesting user's role.
+ */
+const getDashboardSummary = async (requestingUser) => {
+  const filter = await buildTaskFilter(requestingUser);
+
+  const [total, pending, inprogress, completed] = await Promise.all([
+    Task.countDocuments(filter),
+    Task.countDocuments({ ...filter, status: "pending" }),
+    Task.countDocuments({ ...filter, status: "inprogress" }),
+    Task.countDocuments({ ...filter, status: "completed" }),
+  ]);
+
+  return { total, pending, inprogress, completed };
+};
+
+/**
+ * Dashboard: Recent 5 created tasks, scoped by role.
+ */
+const getRecentTasks = async (requestingUser) => {
+  const filter = await buildTaskFilter(requestingUser);
+
+  const tasks = await Task.find(filter)
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .populate("assignedTo", "username email role")
+    .populate("createdBy", "username email role")
+    .populate("teamLeadId", "username email");
+
+  return tasks;
+};
+
+module.exports = {
+  getTasks,
+  getTaskById,
+  createTask,
+  updateTask,
+  reassignTask,
+  deleteTask,
+  getDashboardSummary,
+  getRecentTasks,
+};

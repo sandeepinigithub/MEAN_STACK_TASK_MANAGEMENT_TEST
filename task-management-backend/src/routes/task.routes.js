@@ -19,6 +19,12 @@ router.get("/", validate(taskQuerySchema, "query"), taskController.getTasks);
 // POST /api/tasks
 router.post("/", validate(createTaskSchema), taskController.createTask);
 
+// GET /api/tasks/dashboard/summary  — role-wise summary card counts
+router.get("/dashboard/summary", taskController.getDashboardSummary);
+
+// GET /api/tasks/dashboard/recent  — role-wise 5 most recent tasks
+router.get("/dashboard/recent", taskController.getRecentTasks);
+
 // GET /api/tasks/:id
 router.get("/:id", taskController.getTaskById);
 

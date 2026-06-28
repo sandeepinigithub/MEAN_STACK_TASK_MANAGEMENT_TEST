@@ -72,4 +72,31 @@ const deleteTask = async (req, res) => {
   }
 };
 
-module.exports = { getTasks, getTaskById, createTask, updateTask, reassignTask, deleteTask };
+const getDashboardSummary = async (req, res) => {
+  try {
+    const summary = await taskService.getDashboardSummary(req.user);
+    return successResponse(res, 200, "Dashboard summary retrieved successfully", { summary });
+  } catch (error) {
+    return errorResponse(res, error.statusCode || 500, error.message);
+  }
+};
+
+const getRecentTasks = async (req, res) => {
+  try {
+    const tasks = await taskService.getRecentTasks(req.user);
+    return successResponse(res, 200, "Recent tasks retrieved successfully", { tasks });
+  } catch (error) {
+    return errorResponse(res, error.statusCode || 500, error.message);
+  }
+};
+
+module.exports = {
+  getTasks,
+  getTaskById,
+  createTask,
+  updateTask,
+  reassignTask,
+  deleteTask,
+  getDashboardSummary,
+  getRecentTasks,
+};
