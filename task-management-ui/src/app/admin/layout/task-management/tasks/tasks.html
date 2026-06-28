@@ -1,4 +1,4 @@
-<div class="tasks-container container-fluid py-4">
+<div class="tasks-container container-fluid py-4" *appShowGridAction="getActionPermissions('Portal.TaskManagement.Tasks');permissonValue: 'view'">
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center gap-3">
@@ -7,7 +7,7 @@
       </div>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <p-button
+      <p-button *appShowGridAction="getActionPermissions('Portal.TaskManagement.Tasks');permissonValue: 'add'"
         label="New Task"
         icon="pi pi-plus"
         severity="primary"

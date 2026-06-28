@@ -5,6 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { PrimengTableHelper } from '../helpers/PrimengTableHelper';
 import { DateUtil } from '../utils/dateUtil';
+import { RoleActionGrid } from '../../accounts/auth/role-action-grid';
 
 @Component({
     template: ``,
@@ -45,6 +46,10 @@ export abstract class AppComponentBase implements OnDestroy {
                 this.queryParams[key] = queryParams.get(key);
             });
         });
+    }
+
+    getActionPermissions(module: string): string[] {
+        return RoleActionGrid[this.userDetails?.role]?.[module] || [];
     }
 
     /**

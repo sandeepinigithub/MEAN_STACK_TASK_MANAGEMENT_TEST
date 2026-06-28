@@ -53,6 +53,7 @@ import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
 import { ValidationMessage } from './validation-message/validation-message';
 import { CompWrap } from './comp-wrap/comp-wrap';
+import { ShowGridActionDirective } from './directives/show-grid-action.directive';
 
 @NgModule({
   declarations: [
@@ -115,7 +116,10 @@ import { CompWrap } from './comp-wrap/comp-wrap';
     IconFieldModule,
     InputIconModule,
     OverlayBadgeModule,
-    TagModule
+    TagModule,
+
+    // Directive 
+    ShowGridActionDirective
   ],
   exports: [
     FormsModule,
@@ -174,7 +178,10 @@ import { CompWrap } from './comp-wrap/comp-wrap';
 
     // Component 
     ValidationMessage,
-    CompWrap
+    CompWrap,
+
+    // Directive 
+    ShowGridActionDirective
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AppMenu } from './app-menu';
 import { AppMenuItem } from './app-menu-item';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AppNavigationService {
     constructor(
     ) { }
