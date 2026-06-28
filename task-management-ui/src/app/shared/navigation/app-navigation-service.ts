@@ -28,9 +28,9 @@ export class AppNavigationService {
                     new AppMenuItem('Tasks', '', '', '/portal/task-management/tasks'),
                 ]
             ),
-            new AppMenuItem('User Management', 'manager.teamlead', 'pi pi-user me-1', '', [],
+            new AppMenuItem('User Management', 'manager', 'pi pi-user me-1', '', [],
                 [
-                    new AppMenuItem('Users', 'manager.teamlead', '', '/portal/user-management/users'),
+                    new AppMenuItem('Users', 'manager', '', '/portal/user-management/users'),
                 ]
             ),
         ];

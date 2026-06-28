@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AppComponentBase } from '../../../../shared/common-shared/app-component-base';
@@ -41,7 +41,8 @@ export class TaskForm extends AppComponentBase implements OnInit {
     injector: Injector,
     private fb: FormBuilder,
     private taskService: TaskService,
-    private userService: UserService
+    private userService: UserService,
+    private _cdr: ChangeDetectorRef
   ) {
     super(injector);
     this.formInitialisation();
@@ -63,7 +64,7 @@ export class TaskForm extends AppComponentBase implements OnInit {
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
       status: ['pending', Validators.required],
-      assignedTo: [null],
+      assignedTo: [String(this.userDetails?._id), Validators.required],
     });
   }
 
@@ -72,9 +73,10 @@ export class TaskForm extends AppComponentBase implements OnInit {
       next: (res: any) => {
         const users: any[] = res?.data?.users ?? res?.data ?? [];
         this.userOptions = users.map((u: any) => ({
-          label: `${u.username} (${u.role})`,
-          value: String(u.id ?? u._id),
+          label: `${u._id == this.userDetails?._id ? 'Me' : u.username + '-' + u.role }`,
+          value: String(u._id),
         }));
+        this._cdr.detectChanges();
       },
       error: () => {
         this._messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Could not load users.' });
