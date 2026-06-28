@@ -4,27 +4,27 @@ import { environment } from '../../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly base = `${environment.baseUrl}/api/tasks`;
+  private readonly base = `${environment.baseUrl}`;
 
   constructor(private http: HttpClient) {}
 
   getTasks(params?: any) {
-    return this.http.get(this.base, { params });
+    return this.http.get(`${this.base}/api/tasks`, { params });
   }
 
   getTaskById(id: string) {
-    return this.http.get(`${this.base}/${id}`);
+    return this.http.get(`${this.base}/api/tasks/${id}`);
   }
 
   createTask(payload: any) {
-    return this.http.post(this.base, payload);
+    return this.http.post(`${this.base}/api/tasks`, payload);
   }
 
   updateTask(id: string, payload: any) {
-    return this.http.put(`${this.base}/${id}`, payload);
+    return this.http.patch(`${this.base}/api/tasks/${id}`, payload);
   }
 
   deleteTask(id: string) {
-    return this.http.delete(`${this.base}/${id}`);
+    return this.http.delete(`${this.base}/api/tasks/${id}`);
   }
 }

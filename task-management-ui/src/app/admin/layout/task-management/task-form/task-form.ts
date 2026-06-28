@@ -137,9 +137,9 @@ export class TaskForm extends AppComponentBase implements OnInit {
     this.submitting = true;
     const payload = { ...this.form.value };
 
-    // Employees always get self-assigned
+    // Employees cannot assign/reassign
     if (!this.canAssign) {
-      payload.assignedTo = this.userDetails?._id;
+      delete payload.assignedTo;
     }
 
     const request$ = this.isEditMode && this.taskId

@@ -93,7 +93,8 @@
       <ng-template pTemplate="header">
         <tr>
           <th style="min-width: 12rem">TASK</th>
-          <th style="min-width: 9rem">ASSIGNEE</th>
+          <th style="min-width: 9rem">ASSIGNED TO</th>
+          <th style="min-width: 9rem">ASSIGNED BY</th>
           <th style="width: 10rem">STATUS</th>
           <th style="width: 9rem">DUE DATE</th>
           <th style="width: 6rem">ACTIONS</th>
@@ -107,6 +108,9 @@
           </td>
           <td>
             <span class="small">{{ task.assignedTo?.username ?? '—' }}</span>
+          </td>
+          <td>
+            <span class="small">{{ task.createdBy?.username ?? '—' }}</span>
           </td>
           <td>
             <p-tag [value]="getStatusLabel(task.status + '')" [severity]="getStatusSeverity(task.status + '')" />
