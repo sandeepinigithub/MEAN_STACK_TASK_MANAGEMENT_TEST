@@ -32,7 +32,7 @@
     <div class="p-3">
       <div class="row g-3 align-items-end">
         <!-- Search -->
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-5">
           <label class="d-block small text-muted mb-1">Search</label>
           <p-inputgroup>
             <p-inputgroup-addon>
@@ -56,14 +56,13 @@
             [(ngModel)]="selectedStatus"
             placeholder="All Statuses"
             [showClear]="true"
-            (onChange)="applyFilters()"
-            styleClass="w-100"
+            (onChange)="onStatusChange()"
+            class="w-100"
           >
           </p-select>
         </div>
-
         <!-- Clear -->
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-2">
           <p-button
             label="Clear Filters"
             [text]="true"
@@ -83,10 +82,12 @@
       [value]="primengTableHelper.records"
       [loading]="primengTableHelper.isLoading"
       [paginator]="true"
-      [rows]="primengTableHelper.defaultRecordsCountPerPage"
+      [rows]="limit"
       [(first)]="first"
       [totalRecords]="primengTableHelper.totalRecordsCount"
       [rowsPerPageOptions]="primengTableHelper.predefinedRecordsCountPerPage"
+      [lazy]="true"
+      (onLazyLoad)="onLazyLoad($event)"
       class="p-datatable-sm"
       [tableStyle]="{ 'min-width': '55rem' }"
     >

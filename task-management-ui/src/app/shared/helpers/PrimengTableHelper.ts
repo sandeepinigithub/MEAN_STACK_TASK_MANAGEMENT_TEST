@@ -16,15 +16,11 @@ export class PrimengTableHelper {
     isLoading = false;
 
     showLoadingIndicator(): void {
-        setTimeout(() => {
-            this.isLoading = true;
-        }, 0);
+        this.isLoading = true;
     }
 
     hideLoadingIndicator(): void {
-        setTimeout(() => {
-            this.isLoading = false;
-        }, 0);
+        this.isLoading = false;
     }
 
     getSorting(table: Table): string {

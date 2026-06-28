@@ -2,9 +2,8 @@ import { ChangeDetectorRef, Component, Injector, OnInit, signal } from '@angular
 import { MenuItem } from 'primeng/api';
 import { AppComponentBase } from '../../../../shared/common-shared/app-component-base';
 import { TaskService } from '../../../../services/task-service';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
-type TagSeverity = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
-type TaskStatus = 'pending' | 'completed' | 'inprogress';
 
 @Component({
   selector: 'app-tasks',
@@ -15,11 +14,15 @@ type TaskStatus = 'pending' | 'completed' | 'inprogress';
 export class Tasks extends AppComponentBase implements OnInit {
 
   first = 0;
+  page = 1;
+  limit = 10;
+
   searchText = '';
   selectedStatus = '';
-  loading: boolean = false;
 
-  private allTasks: any[] = [];
+  searchSubject: any = new Subject();
+
+  private pageRecords: any[] = [];
 
   readonly statusOptions = [
     { label: 'Pending', value: 'pending' },
@@ -36,51 +39,69 @@ export class Tasks extends AppComponentBase implements OnInit {
   }
 
   ngOnInit(): void {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadTasks();
+    })
+  }
+
+  onLazyLoad(event: any): void {
+    this.limit = event.rows ?? this.limit;
+    this.page = Math.floor((event.first ?? 0) / this.limit) + 1;
+    this.first = event.first ?? 0;
     this.loadTasks();
   }
 
   loadTasks(): void {
-    this.loading = true;
-    this.taskService.getTasks().subscribe({
+    this.primengTableHelper.showLoadingIndicator();
+    const params: any = {
+      page: this.page,
+      limit: this.limit,
+    };
+    if (this.selectedStatus) {
+      params['status'] = this.selectedStatus;
+    }
+    if (this.searchText.trim().length > 0) {
+      params['search'] = this.searchText;
+    }
+
+    this.taskService.getTasks(params).subscribe({
       next: (res: any) => {
-        this.allTasks = res?.data?.tasks ?? res?.data ?? [];
-        this.primengTableHelper.totalRecordsCount = res?.meta?.total ?? this.allTasks.length;
-        this.applyFilters();
+        this.pageRecords = res?.data?.tasks ?? [];
+        this.primengTableHelper.records = [...this.pageRecords];
+        this.primengTableHelper.totalRecordsCount = res?.meta?.total ?? 0;
       },
       error: () => {
         this._messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not load tasks.' });
       },
       complete: () => {
-        this.loading = false;
+        this.primengTableHelper.hideLoadingIndicator();
         this._cdr.detectChanges();
       },
     });
   }
 
-  onSearch(): void { this.applyFilters(); }
-
-  applyFilters(): void {
-    let result = [...this.allTasks];
-    if (this.searchText.trim()) {
-      const term = this.searchText.toLowerCase();
-      result = result.filter(t =>
-        t.title?.toLowerCase().includes(term) ||
-        t.description?.toLowerCase().includes(term) ||
-        t.assignedTo?.username?.toLowerCase().includes(term)
-      );
-    }
-    if (this.selectedStatus) {
-      result = result.filter(t => t.status === this.selectedStatus);
-    }
-    this.primengTableHelper.records = result;
-    this.primengTableHelper.totalRecordsCount = result.length;
+  onSearch(): void {
+    this.page = 1;
     this.first = 0;
+    this.searchSubject.next(this.searchText);
+  }
+
+  onStatusChange(): void {
+    this.page = 1;
+    this.first = 0;
+    this.loadTasks();
   }
 
   clearFilters(): void {
     this.searchText = '';
     this.selectedStatus = '';
-    this.applyFilters();
+    this.page = 1;
+    this.first = 0;
+    this.loadTasks();
   }
 
   openNewTask(): void {
@@ -98,8 +119,8 @@ export class Tasks extends AppComponentBase implements OnInit {
   deleteTask(task: any): void {
     this.taskService.deleteTask(task._id).subscribe({
       next: () => {
-        this.allTasks = this.allTasks.filter(t => t._id !== task._id);
-        this.applyFilters();
+        this.pageRecords = this.pageRecords.filter(t => t._id !== task._id);
+        this.primengTableHelper.totalRecordsCount = Math.max(0, this.primengTableHelper.totalRecordsCount - 1);
         this._messageService.add({ severity: 'success', summary: 'Deleted', detail: `"${task.title}" deleted.` });
       },
       error: (err: any) => {
@@ -109,13 +130,13 @@ export class Tasks extends AppComponentBase implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string): TagSeverity {
-    const map: Record<string, TagSeverity> = { completed: 'success', inprogress: 'info', pending: 'warn' };
-    return map[String(status)] ?? 'secondary';
+  getStatusSeverity(status: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+    const map: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = { completed: 'success', inprogress: 'info', pending: 'warn' };
+    return map[status] ?? 'secondary';
   }
 
   getStatusLabel(status: string): string {
-    const map: Record<string, string> = { completed: 'Completed', inprogress: 'In Progress', pending: 'Pending' };
-    return map[String(status)] ?? String(status);
+    const map: any = { completed: 'Completed', inprogress: 'In Progress', pending: 'Pending' };
+    return map[status] ?? status;
   }
 }

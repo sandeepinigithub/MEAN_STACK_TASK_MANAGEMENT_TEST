@@ -6,7 +6,7 @@ const ApiError = require("../utils/apiError");
  */
 const buildTaskFilter = async (requestingUser, queryFilters = {}) => {
   const filter = {};
-  const { status, assignedTo } = queryFilters;
+  const { search, status, assignedTo } = queryFilters;
 
   if (requestingUser.role === "manager") {
     // Manager sees all tasks
@@ -21,8 +21,13 @@ const buildTaskFilter = async (requestingUser, queryFilters = {}) => {
     // Employee sees only tasks assigned to themselves
     filter.assignedTo = requestingUser._id;
   }
-
   if (status) filter.status = status;
+  if (search?.trim()) {
+    filter.$or = [
+      { title: { $regex: search.trim(), $options: "i" } },
+      { description: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
 
   return filter;
 };
@@ -31,9 +36,9 @@ const buildTaskFilter = async (requestingUser, queryFilters = {}) => {
  * Get paginated task list.
  */
 const getTasks = async (requestingUser, query = {}) => {
-  const { page = 1, limit = 10, status, assignedTo } = query;
+  const { page = 1, limit = 10, search, status, assignedTo } = query;
 
-  const filter = await buildTaskFilter(requestingUser, { status, assignedTo });
+  const filter = await buildTaskFilter(requestingUser, { search, status, assignedTo });
 
   const options = {
     page: Number(page),
