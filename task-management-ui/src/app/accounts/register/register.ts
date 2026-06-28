@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Injector, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AppComponentBase } from '../../shared/common-shared/app-component-base';
-import { UserService } from '../../services/user-service';
+import { AuthService } from '../../services/auth-service';
 
 @Component({
   selector: 'app-register',
@@ -23,7 +23,7 @@ export class Register extends AppComponentBase implements OnInit {
     { label: 'Employee', value: 'employee' },
   ];
 
-  constructor(injector: Injector, private fb: FormBuilder, private userService: UserService) {
+  constructor(injector: Injector, private fb: FormBuilder, private _authService: AuthService) {
     super(injector);
     this.formInitialisation();
   }
@@ -67,7 +67,7 @@ export class Register extends AppComponentBase implements OnInit {
     const { confirmPassword, ...payload } = this.registerForm.getRawValue();
     this.isSubmitLoader = true;
 
-    this.userService.createUser(payload).subscribe({
+    this._authService.register(payload).subscribe({
       next: () => {
         this._messageService.add({ severity: 'success', summary: 'Success', detail: 'Account created successfully.' });
         setTimeout(() => this.onClose.emit(), 800);
