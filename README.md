@@ -2,6 +2,12 @@
 
 A full-stack, role-based **Task Management Application** built with the **MEAN stack** (MongoDB · Express · Angular · Node.js). It supports three hierarchical roles — **Manager**, **Team Lead**, and **Employee** — each with scoped visibility and action permissions. The backend is also wired with **Socket.IO** for real-time event delivery.
 
+## System Screenshots
+
+**Click here to view the application screenshots**
+
+➡️ **[View System Screenshots](#Application-Screenshots)**
+
 ---
 
 
