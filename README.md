@@ -229,7 +229,7 @@ The backend is fully wired for real-time communication using **Socket.IO v4**.
 
 ---
 
-## 10. Application Screenshots
+## Application Screenshots
 
 ### Login Page
 
