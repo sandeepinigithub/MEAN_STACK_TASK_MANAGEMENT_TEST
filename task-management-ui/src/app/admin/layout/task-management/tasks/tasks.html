@@ -96,7 +96,7 @@
           <th style="min-width: 9rem">ASSIGNED TO</th>
           <th style="min-width: 9rem">ASSIGNED BY</th>
           <th style="width: 10rem">STATUS</th>
-          <th style="width: 9rem">DUE DATE</th>
+          <th style="width: 9rem">DATE</th>
           <th style="width: 6rem">ACTIONS</th>
         </tr>
       </ng-template>
@@ -107,27 +107,59 @@
             <div class="fw-bold text-dark">{{ task.title }}</div>
           </td>
           <td>
-            <span class="small">{{ task.assignedTo?.username ?? '—' }}</span>
+            @if (task.assignedTo?._id == userDetails?._id) {
+              <p-chip label="Me" class="chip-sm"/>
+            } @else {
+              <span class="small">{{ task.assignedTo?.username ?? '—' }}</span>
+            }
           </td>
           <td>
-            <span class="small">{{ task.createdBy?.username ?? '—' }}</span>
+            @if (task.createdBy?._id == userDetails?._id) {
+              <p-chip label="Me" class="chip-sm"/>
+            } @else {
+              <span class="small">{{ task.createdBy?.username ?? '—' }}</span>
+            }
           </td>
           <td>
-            <p-tag [value]="getStatusLabel(task.status + '')" [severity]="getStatusSeverity(task.status + '')" />
+            <p-tag
+              [value]="getStatusLabel(task.status + '')"
+              [severity]="getStatusSeverity(task.status + '')"
+            />
           </td>
           <td>
             <span class="small text-muted text-nowrap">
-              {{ task.createdAt | date:'mediumDate' }}
+              {{ dateUtil.formatDate(task.createdAt) }}
             </span>
           </td>
           <td>
             <div class="d-flex gap-1">
-              <p-button icon="pi pi-eye" [text]="true" severity="primary" size="small"
-                (click)="viewTask(task)" pTooltip="View" tooltipPosition="top" />
-              <p-button icon="pi pi-pencil" [text]="true" severity="info" size="small"
-                (click)="openEditTask(task)" pTooltip="Edit" tooltipPosition="top" />
-              <p-button icon="pi pi-trash" [text]="true" severity="danger" size="small"
-                (click)="deleteTask(task)" pTooltip="Delete" tooltipPosition="top" />
+              <p-button
+                icon="pi pi-eye"
+                [text]="true"
+                severity="primary"
+                size="small"
+                (click)="viewTask(task)"
+                pTooltip="View"
+                tooltipPosition="top"
+              />
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="info"
+                size="small"
+                (click)="openEditTask(task)"
+                pTooltip="Edit"
+                tooltipPosition="top"
+              />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (click)="deleteTask(task)"
+                pTooltip="Delete"
+                tooltipPosition="top"
+              />
             </div>
           </td>
         </tr>
@@ -145,7 +177,6 @@
         </tr>
       </ng-template>
     </p-table>
-
   </div>
 </div>
 

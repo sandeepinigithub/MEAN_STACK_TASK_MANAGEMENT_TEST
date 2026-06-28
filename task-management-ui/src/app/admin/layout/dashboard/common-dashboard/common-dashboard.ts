@@ -90,13 +90,7 @@ export class CommonDashboard extends AppComponentBase implements OnInit {
     this._taskService.getRecentTasks().subscribe({
       next: (res: any) => {
         const tasks = res?.data?.tasks ?? [];
-        this.recentTasks = tasks.map((t: any) => ({
-          id: t._id,
-          title: t.title,
-          assignee: t.assignedTo?.username ?? '—',
-          createdBy: t.createdBy?.username ?? '—',
-          status: t.status,
-        }));
+        this.recentTasks = tasks
       },
       error: () => {
         this.loading = false;

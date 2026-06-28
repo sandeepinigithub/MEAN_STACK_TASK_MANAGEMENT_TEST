@@ -52,6 +52,7 @@
                   <th>Title</th>
                   <th>Assigned To</th>
                   <th>Created By</th>
+                  <th>Date</th>
                   <th style="width: 130px">Status</th>
                 </tr>
               </ng-template>
@@ -60,13 +61,25 @@
                   <td>{{ task.title }}</td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
-                      <span>{{ task.assignee }}</span>
+                      @if (task.assignedTo?._id == userDetails?._id) {
+                        <p-chip label="Me" class="chip-sm" />
+                      } @else {
+                        <span class="small">{{ task.assignedTo?.username ?? '—' }}</span>
+                      }
                     </div>
                   </td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
-                      <span>{{ task.assignee }}</span>
+                      @if (task.createdBy?._id == userDetails?._id) {
+                        <p-chip label="Me" class="chip-sm" />
+                      } @else {
+                        <span class="small">{{ task.createdBy?.username ?? '—' }}</span>
+                      }
                     </div>
+                  </td>
+                  <td>
+                    {{dateUtil.formatDate(task.createdAt)}}
+
                   </td>
                   <td>
                     <p-tag
