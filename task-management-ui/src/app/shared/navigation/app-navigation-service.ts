@@ -7,21 +7,36 @@ export class AppNavigationService {
     constructor(
     ) { }
 
+    /**
+     * Returns true when the current user is allowed to see the menu item.
+     * - Empty permissionName  → visible to everyone.
+     * - Non-empty permissionName → must contain the user's role (comma-separated list).
+     *   Supported roles: manager, teamlead, employee
+     */
+    hasPermission(permissionName: string): boolean {
+        if (!permissionName) return true;
+        const role = JSON.parse(sessionStorage.getItem('userDetails') ?? '{}').role;
+        if (!role) return false;
+        return permissionName.split('.').map(r => r.trim()).includes(role);
+    }
+
     getMenu(): AppMenu {
-        return new AppMenu('MainMenu', 'MainMenu', [
+        const allItems: AppMenuItem[] = [
             new AppMenuItem('Dashboard', '', 'pi pi-home', '/portal/dashboard'),
-            new AppMenuItem("Task Management", '', "pi pi-list me-1", '', [],
+            new AppMenuItem('Task Management', '', 'pi pi-list me-1', '', [],
                 [
                     new AppMenuItem('Tasks', '', '', '/portal/task-management/tasks'),
                 ]
             ),
-            new AppMenuItem("User Management", '', "pi pi-user me-1", '', [],
+            new AppMenuItem('User Management', 'manager.teamlead', 'pi pi-user me-1', '', [],
                 [
-                    new AppMenuItem('Users', '', '', '/portal/user-management/users'),
+                    new AppMenuItem('Users', 'manager.teamlead', '', '/portal/user-management/users'),
                 ]
             ),
+        ];
 
-        ]);
+        const filtered = allItems.filter(item => this.hasPermission(item.permissionName));
+        return new AppMenu('MainMenu', 'MainMenu', filtered);
     }
 
 
