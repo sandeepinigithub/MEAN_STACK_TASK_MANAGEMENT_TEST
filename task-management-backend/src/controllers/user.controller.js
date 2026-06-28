@@ -12,7 +12,7 @@ const getUsers = async (req, res) => {
 
 const getMasterUserList = async (req, res) => {
   try {
-    const users = await userService.getMasterUserList();
+    const users = await userService.getMasterUserList(req.user);
     return successResponse(res, 200, "Master user list retrieved successfully", { users });
   } catch (error) {
     return errorResponse(res, error.statusCode || 500, error.message);

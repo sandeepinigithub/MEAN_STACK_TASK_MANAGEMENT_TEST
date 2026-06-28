@@ -131,7 +131,8 @@ const createTask = async (requestingUser, taskData) => {
 };
 
 /**
- * Update a task's title, description, or status.
+ * Update a task's title, description, status, and/or assignedTo.
+ * assignedTo follows the same role-based rules as reassignTask.
  */
 const updateTask = async (requestingUser, taskId, updates) => {
   const task = await Task.findById(taskId);
@@ -139,10 +140,28 @@ const updateTask = async (requestingUser, taskId, updates) => {
 
   await assertTaskAccess(requestingUser, task, "write");
 
-  const allowedFields = ["title", "description", "status"];
-  allowedFields.forEach((field) => {
-    if (updates[field] !== undefined) task[field] = updates[field];
-  });
+  const { title, description, status, assignedTo } = updates;
+
+  if (title !== undefined) task.title = title;
+  if (description !== undefined) task.description = description;
+  if (status !== undefined) task.status = status;
+
+  // Handle reassignment — employees cannot reassign so assignedTo is ignored for them
+  if (assignedTo !== undefined && assignedTo !== null && requestingUser.role !== "employee") {
+    const newAssignee = await User.findById(assignedTo);
+    if (!newAssignee) throw new ApiError(404, "Assigned user not found");
+
+    if (requestingUser.role === "manager") {
+      task.assignedTo = assignedTo;
+      task.teamLeadId = newAssignee.role === "teamlead"
+        ? newAssignee._id
+        : newAssignee.teamLeadId || null;
+    } else if (requestingUser.role === "teamlead") {
+      await assertTeamLeadCanAssign(requestingUser, assignedTo);
+      task.assignedTo = assignedTo;
+      task.teamLeadId = requestingUser._id;
+    }
+  }
 
   await task.save();
 
@@ -204,7 +223,7 @@ const deleteTask = async (requestingUser, taskId) => {
   await Task.findByIdAndDelete(taskId);
 };
 
-// ─── Private helpers ────────────────────────────────────────────────────────
+// Private helpers
 
 /**
  * Verify the requesting user can access the task.

@@ -18,8 +18,12 @@ const updateTaskSchema = Joi.object({
   title: Joi.string().min(3).max(100).trim().optional(),
   description: Joi.string().max(1000).trim().optional().allow(""),
   status: Joi.string().valid("pending", "inprogress", "completed").optional(),
+  assignedTo: Joi.string().hex().length(24).optional().allow(null).messages({
+    "string.hex": "assignedTo must be a valid user ID",
+    "string.length": "assignedTo must be a valid user ID",
+  }),
 }).min(1).messages({
-  "object.min": "At least one field (title, description, status) is required",
+  "object.min": "At least one field (title, description, status, assignedTo) is required",
 });
 
 const assignTaskSchema = Joi.object({

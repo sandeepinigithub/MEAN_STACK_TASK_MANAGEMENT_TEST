@@ -165,10 +165,30 @@ const getTeamLeadsWithStats = async (query = {}) => {
 };
 
 /**
- * Master user list — returns all users with only id and username.
+ * Master user list — role-scoped flat list (id + username + role).
+ * Manager  → all users
+ * Team Lead → self + own employees
+ * Employee  → self only
  */
-const getMasterUserList = async () => {
-  const users = await User.find({}).select("_id username role").lean();
+const getMasterUserList = async (requestingUser) => {
+  let filter = {};
+
+  if (requestingUser.role === "manager") {
+    // no filter — all users
+  } else if (requestingUser.role === "teamlead") {
+    // self + employees under this team lead
+    filter = {
+      $or: [
+        { _id: requestingUser._id },
+        { teamLeadId: requestingUser._id, role: "employee" },
+      ],
+    };
+  } else {
+    // employee — self only
+    filter = { _id: requestingUser._id };
+  }
+
+  const users = await User.find(filter).select("_id username role").lean();
   return users.map((u) => ({ _id: u._id, username: u.username, role: u.role }));
 };
 

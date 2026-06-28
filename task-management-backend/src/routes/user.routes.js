@@ -23,8 +23,8 @@ router.post("/", authorize("manager"), validate(createUserSchema), userControlle
 // Must be placed BEFORE /:id to prevent "team-leads" being treated as an id
 router.get("/team-leads", authorize("manager"), userController.getTeamLeadsWithStats);
 
-// GET  /api/users/master-list — All roles: flat list of all users (id + username, role only)
-router.get("/master-list", authorize("manager", "teamlead"), userController.getMasterUserList);
+// GET  /api/users/master-list — All roles: scoped flat list (manager=all, teamlead=self+team, employee=self)
+router.get("/master-list", userController.getMasterUserList);
 
 // GET    /api/users/:id    — Manager or Team Lead (scoped)
 router.get("/:id", authorize("manager", "teamlead"), userController.getUserById);
