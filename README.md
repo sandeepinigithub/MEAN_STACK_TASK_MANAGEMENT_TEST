@@ -4,23 +4,8 @@ A full-stack, role-based **Task Management Application** built with the **MEAN s
 
 ---
 
-## Table of Contents
 
-1. [Tech Stack & Requirements](#1-tech-stack--requirements)
-2. [Project Structure](#2-project-structure)
-3. [Features](#3-features)
-4. [Role & Permission Matrix](#4-role--permission-matrix)
-5. [API Reference](#5-api-reference)
-6. [Database Models](#6-database-models)
-7. [Setup — Backend](#7-setup--backend)
-8. [Setup — Frontend](#8-setup--frontend)
-9. [Socket.IO](#9-socketio)
-10. [Application Screenshots](#10-application-screenshots)
-
----
-
-
-## 3. Features
+## Features
 
 - **JWT Authentication** — token-based login with 30-minute expiry
 - **Role-based Access Control** — three roles with isolated data visibility
@@ -104,14 +89,14 @@ All endpoints require `Authorization: Bearer <token>`.
 
 ## Setup — Backend
 
-### Step 1 — Clone & install
+### Clone & install
 
 ```bash
 cd task-management-backend
 npm install
 ```
 
-### Step 2 — Configure environment
+### Configure environment
 
 ```bash
 cp .env.example .env
